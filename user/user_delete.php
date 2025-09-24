@@ -1,21 +1,18 @@
 <?php
 include '../db/dbconn.php';
-include 'user_update_delete_function.php';
 
-if (isset($_GET['student_id'])) {
-    $id = intval($_GET['student_id']);
+if (isset($_POST['student_id'])) {
+    $student_id = $_POST['student_id'];
 
-    if (deleteRecord($id)) {
-        echo "<div class='alert alert-success text-center'>Record deleted successfully!</div>";
+    $stmt = $conn->prepare("DELETE FROM student WHERE student_id = ?");
+    $stmt->bind_param("i", $student_id);
+
+    if ($stmt->execute()) {
+        echo "Student deleted successfully";
     } else {
-        echo "<div class='alert alert-danger text-center'>Error deleting record!</div>";
+        echo "Error deleting student";
     }
-} else {
-    echo "<div class='alert alert-warning text-center'>No ID provided!</div>";
-}
-?>
 
-<br>
-<div class="text-center">
-    <a href="user_table.php" class="btn btn-primary">Back to Records</a>
-</div>
+    $stmt->close();
+    $conn->close();
+}

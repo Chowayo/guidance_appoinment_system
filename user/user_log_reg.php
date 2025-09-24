@@ -150,7 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
  
     <div class="form-container register-form">
       <h2>Register</h2>
-      <form action="user_function.php" method="POST">
+      <form action="user_function.php" method="POST" id=addStudent>
         <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
         <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>
         <input type="number" name="student_id" class="form-control" placeholder="Student ID" required>
@@ -184,6 +184,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   function showRegister() {
     document.getElementById('box').classList.add('active');
   }
+
 </script>
 
 </body>
