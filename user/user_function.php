@@ -21,11 +21,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "❌ Student ID or email already registered!";
     } else {
         // Insert user
-        $stmt = $conn->prepare(
-            "INSERT INTO student (student_id, first_name, last_name, email, password) 
-             VALUES (?, ?, ?, ?, ?)"
-        );
-        $stmt->bind_param("issss", $student_id, $first_name, $last_name, $email, $hashed_password);
+       $grade_level = $_POST['grade_level'];
+
+$stmt = $conn->prepare(
+    "INSERT INTO student (student_id, first_name, last_name, email, grade_level, password) 
+     VALUES (?, ?, ?, ?, ?, ?)"
+);
+$stmt->bind_param("isssss", $student_id, $first_name, $last_name, $email, $grade_level, $hashed_password);
+
 
         if ($stmt->execute()) {
             echo "✅ Registration successful! Redirecting to login...";

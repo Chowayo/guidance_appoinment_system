@@ -3,10 +3,10 @@ session_start();
 include "../db/dbconn.php";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $student_id = intval($_POST["student_id"]); // make sure it's an integer
+    $student_id = intval($_POST["student_id"]);
     $password   = trim($_POST["password"]);
 
-    // Correct table name: "student"
+    
     $stmt = $conn->prepare("SELECT student_id, first_name, last_name, email, password, grade_level FROM student WHERE student_id=?");
     $stmt->bind_param("i", $student_id);
     $stmt->execute();
@@ -17,14 +17,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->fetch();
 
         if (password_verify($password, $hashed_password)) {
-            // Set session variables
+            
             $_SESSION["student_id"] = $id;
             $_SESSION["first_name"] = $first_name;
             $_SESSION["last_name"]  = $last_name;
             $_SESSION["email"]      = $email;
             $_SESSION["grade_level"]= $grade_level;
 
-            header("Location: landing_page.php"); // redirect to landing page
+            header("Location: landing_page.php");
             exit;
         } else {
             $error = "❌ Invalid password!";
@@ -37,7 +37,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
-
 
 
 <!DOCTYPE html>

@@ -1,0 +1,22 @@
+SQL
+
+CREATE TABLE appointments (
+    ->     appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     student_id INT NOT NULL,
+    ->     counselor_id INT NOT NULL,
+    ->     date DATE NOT NULL,
+    ->     time TIME NOT NULL,
+    ->     reason TEXT,
+    ->     status ENUM('pending','approved','declined','rescheduled') DEFAULT 'pending',
+    ->     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     FOREIGN KEY (student_id) REFERENCES student(student_id),
+    ->     FOREIGN KEY (counselor_id) REFERENCES counselor(counselor_id)
+    -> );
+
+CREATE TABLE counselor_availability (
+    ->     id INT AUTO_INCREMENT PRIMARY KEY,
+    ->     counselor_id INT NOT NULL,
+    ->     available_date DATE NOT NULL,
+    ->     start_time TIME NOT NULL,
+    ->     end_time TIME NOT NULL
+    -> );

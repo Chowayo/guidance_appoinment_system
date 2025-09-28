@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Redirect to student table
-            header("Location: http://localhost/guidance_management/user/user_table.php");
+            header("Location: counselor_dashboard.php");
             exit;
         } else {
             echo "❌ Invalid password!";

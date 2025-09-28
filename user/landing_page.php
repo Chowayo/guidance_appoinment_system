@@ -69,6 +69,7 @@ if (!$student) {
           <p><span class="info-label">Grade Level:</span> <?= htmlspecialchars($student['grade_level']); ?></p>
       </div>
       <a href="user_logout.php" class="btn btn-danger logout-btn">Logout</a>
+      <a href="user_appointment.php" class="btn btn-danger ">Appointment</a>
   </div>
 </body>
 </html>
