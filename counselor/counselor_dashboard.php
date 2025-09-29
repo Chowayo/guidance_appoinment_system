@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Check if counselor is logged in
 if (!isset($_SESSION['counselor_id'])) {
     header("Location: ../counselor/counselor_login.php");
     exit;
@@ -9,7 +8,6 @@ if (!isset($_SESSION['counselor_id'])) {
 
 include '../db/dbconn.php';
 
-// Only show students of the counselor's grade level
 $grade_level = $_SESSION['grade_level'];
 
 $sql = "SELECT student_id, first_name, last_name, email, grade_level 
@@ -29,29 +27,25 @@ $result = $stmt->get_result();
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #cbf0ceff, #8ceb99ff);
+      background: linear-gradient(135deg, #cbf0ceff, #8ceb99ff  );
       position: relative;
-      overflow: hidden;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
     }
 
     body::after {
       content: "";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: url('logo.jpg') no-repeat center;
-      background-size: 1000px;
-      opacity: 0.10;
-      width: 100%;
-      height: 100%;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 250px;
+      height: 250px;
+      background: url("logo.jpg") no-repeat center center;
+      background-size: contain;
+      opacity: 0.1;
       pointer-events: none;
       z-index: 0;
-      padding-top: 100%;
-      background-position: center 480px;
     }
 
     .navbar {
@@ -117,7 +111,7 @@ $result = $stmt->get_result();
   </style>
 </head>
 <nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand fst-italic" href="#">
+  <a class="navbar-brand fst-italic" href="counselor_dashboard.php">
     <img src="../pics/logo.jpg" alt="Logo" class="logo-navbar me-2">
     EVERGREEN INTEGRATED HIGHSCHOOL
   </a>
@@ -129,21 +123,20 @@ $result = $stmt->get_result();
 
 <body class="bg-light">
   <div class="container mt-5">
-    <h2 class="mb-4 text-center">🎓 Counselor Dashboard</h2>
+    <h2 class="shadow p-3 mb-5 bg-body rounded rounded-1 p-3 mb-2 bg-light text-success mb-4 text-center">🎓 Counselor Dashboard</h2>
     
     <div class="row g-4 justify-content-center">
-      <!-- Student Information -->
+      
       <div class="col-md-4">
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">
             <h5 class="card-title">👩‍🎓 Student Information</h5>
             <p class="card-text">View all student profiles and details.</p>
-            <a href="../user/user_table.php" class="btn btn-primary w-100">Go to Students</a>
+            <a href="../student/student_table.php" class="btn btn-primary w-100">Go to Students</a>
           </div>
         </div>
       </div>
 
-      <!-- Appointments -->
       <div class="col-md-4">
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">
@@ -154,7 +147,6 @@ $result = $stmt->get_result();
         </div>
       </div>
 
-      <!-- Availability -->
       <div class="col-md-4">
         <div class="card shadow-sm border-0">
           <div class="card-body text-center">

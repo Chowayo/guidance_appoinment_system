@@ -2,6 +2,11 @@
 session_start();
 include '../db/dbconn.php';
 
+if (!isset($_SESSION['counselor_id'])) {
+    header("Location: ../counselor/counselor_login.php");
+    exit;
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $counselor_id = $_SESSION['counselor_id'];
     $new_password = trim($_POST['new_password']);
@@ -13,9 +18,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($stmt->execute()) {
         
-        echo "✅ Password updated successfully! <a href='../user/user_table.php'>Go to dashboard</a>";
+        echo "✅ Password updated successfully! <a href='../student/student_table.php'>Go to dashboard</a>";
 
-        echo "<script>setTimeout(function(){ window.location.href = '../user/user_table.php'; }, 3000);</script>";
+        echo "<script>setTimeout(function(){ window.location.href = '../student/student_table.php'; }, 3000);</script>";
     } else {
         echo "❌ Error updating password: " . $stmt->error;
     }
@@ -24,7 +29,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn->close();
 }
 ?>
-
 
 <form method="POST">
     <input type="password" name="new_password" placeholder="Enter New Password" required>

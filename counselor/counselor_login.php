@@ -1,45 +1,5 @@
 <?php
 session_start();
-include '../db/dbconn.php';
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $counselor_id = trim($_POST['counselor_id']);
-    $password     = trim($_POST['password']);
-
-    $stmt = $conn->prepare("SELECT counselor_id, first_name, last_name, grade_level, password 
-                            FROM counselor 
-                            WHERE counselor_id=?");
-    $stmt->bind_param("i", $counselor_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($row = $result->fetch_assoc()) {
-        if (password_verify($password, $row['password'])) {
-            // Store session
-            $_SESSION['counselor_id'] = $row['counselor_id'];
-            $_SESSION['first_name']   = $row['first_name'];
-            $_SESSION['last_name']    = $row['last_name'];
-            $_SESSION['grade_level']  = $row['grade_level'];
-
-            // Force password change if default
-            if (password_verify("123asd", $row['password'])) {
-                header("Location: change_password.php");
-                exit;
-            }
-
-            // Normal login redirect
-            header("Location: ../user/user_table.php");
-            exit;
-        } else {
-            $error = "❌ Invalid password!";
-        }
-    } else {
-        $error = "❌ Counselor not found!";
-    }
-
-    $stmt->close();
-    $conn->close();
-}
 ?>
 
 <!DOCTYPE html>
@@ -47,8 +7,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Portal</title>
+  <title>counselor Portal</title>
   <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <script src="../js/sweetalert2@11.js"></script>
 
   <style>
     body {
@@ -149,17 +110,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     <div class="form-container login-form">
-      <h2>Counselor Login</h2>
-      <form action="counselor_function.php" method="POST">
-        <input type="text" name="counselor_id" class="form-control" placeholder="Counselor ID" required>
-        <input type="password" name="password" class="form-control" placeholder="Password" required>
-        <button type="submit" class="btn btn-custom w-100">Login</button>
-      </form>
+  <h2>Counselor Login</h2>
+  <form action="counselor_function.php" method="POST">
+    <input type="text" name="counselor_id" class="form-control" placeholder="Counselor ID" required>
+    <input type="password" name="password" class="form-control" placeholder="Password" required>
+    <button type="submit" class="btn btn-custom w-100">Login</button>
+  </form>
+
+  <?php if (isset($_SESSION['error'])): ?>
+    <div class="mt-3 text-danger fw-bold">
+      <?= $_SESSION['error']; ?>
     </div>
+    <?php unset($_SESSION['error']); ?>
+  <?php endif; ?>
+</div>
+
 
     <div class="form-container notice-form">
       <h2>System Notice</h2>
-      <p class="mt-3">⚠ Only authorized administrators can access this system.<br>
+      <p class="mt-3">⚠ Only authorized counseloristrators can access this system.<br>
       All activities are monitored and logged.</p>
     </div>
   </div>
@@ -172,6 +141,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   function showNotice() {
     document.getElementById('box').classList.add('active');
   }
+
+  <?php if (isset($_SESSION['success'])): ?>
+    Swal.fire({
+        icon: 'success',
+        title: 'Login Successful',
+        text: '<?= $_SESSION['success']; ?>',
+        timer: 2000,              // auto-close after 2 seconds
+        showConfirmButton: false, // hide OK button
+        position: 'center'
+    }).then(() => {
+        <?php if (isset($_GET['redirect']) && $_GET['redirect'] === 'dashboard'): ?>
+            window.location.href = "counselor_dashboard.php";
+        <?php elseif (isset($_GET['redirect']) && $_GET['redirect'] === 'change_password'): ?>
+            window.location.href = "change_password.php";
+        <?php endif; ?>
+    });
+    <?php unset($_SESSION['success']); ?>
+<?php endif; ?>
 </script>
 
 </body>
