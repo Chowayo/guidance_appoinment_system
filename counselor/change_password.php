@@ -18,9 +18,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if ($stmt->execute()) {
         
-        echo "✅ Password updated successfully! <a href='../student/student_table.php'>Go to dashboard</a>";
+        echo "✅ Password updated successfully! <a href='counselor_dashboard.php'>Go to dashboard</a>";
 
-        echo "<script>setTimeout(function(){ window.location.href = '../student/student_table.php'; }, 3000);</script>";
+        echo "<script>setTimeout(function(){ window.location.href = 'counselor_dashboard.php'; }, 3000);</script>";
     } else {
         echo "❌ Error updating password: " . $stmt->error;
     }

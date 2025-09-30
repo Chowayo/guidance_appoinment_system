@@ -46,8 +46,10 @@ if (isset($_GET['student_id'])) {
     <link rel="stylesheet" href="../css/bootstrap.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            background: linear-gradient(135deg, #faedb5ff, #a4ffb8ff);
             font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-size: cover;
+            background-attachment: fixed;
         }
         .card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -67,7 +69,7 @@ if (isset($_GET['student_id'])) {
 <body>
     <div class="container mt-5 d-flex justify-content-center">
         <div class="card shadow-lg p-4 rounded-4" style="max-width: 500px; width: 100%;">
-            <h2 class="text-center mb-4 fw-bold text-primary">Update Record</h2>
+            <h2 class="text-center mb-4 fw-bold text-success">Update Record</h2>
 
             <form method="POST">
                 <input type="hidden" name="student_id" value="<?= $row->student_id ?>">

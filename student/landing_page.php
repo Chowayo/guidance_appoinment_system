@@ -30,15 +30,16 @@ if (!$student) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard</title>
   <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
       body {
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: linear-gradient(135deg, #f3f8a7ff, #0b8600ff);
           font-family: 'Poppins', sans-serif;
           min-height: 100vh;
       }
       .dashboard-container {
           max-width: 800px;
-          margin: 50px auto;
+          margin: 80px auto 50px auto;
           background: #fff;
           border-radius: 15px;
           padding: 40px;
@@ -53,9 +54,36 @@ if (!$student) {
       .logout-btn {
           margin-top: 30px;
       }
+      .logo-navbar {
+        height: 40px;
+        width: auto;
+      }
   </style>
 </head>
 <body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
+    <div class="container-fluid">
+      <a class="navbar-brand fst-italic fw-bold" href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active text-warning fw-bold" aria-current="page" href="#">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white fw-bold" href="student_appointment.php">Appointments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-dark fw-bold" href="student_logout.php" id="logoutBtnNav">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
   <div class="dashboard-container text-center">
       <h1>Welcome, <?= htmlspecialchars($student['first_name']); ?>!</h1>
       <p>Here’s your information:</p>
@@ -65,11 +93,56 @@ if (!$student) {
           <p><span class="info-label">Email:</span> <?= htmlspecialchars($student['email']); ?></p>
           <p><span class="info-label">Grade Level:</span> <?= htmlspecialchars($student['grade_level']); ?></p>
       </div>
-      <a href="student_logout.php" class="btn btn-danger logout-btn">Logout</a>
-      <a href="student_appointment.php" class="btn btn-danger ">Appointment</a>
   </div>
+
+  <script>
+  function handleLogout(event, url) {
+    event.preventDefault();
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "rgba(6, 68, 14, 1)",
+      cancelButtonColor: "#8cca8aff",
+      confirmButtonText: "Yes, logout"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  }
+
+  document.getElementById("logoutBtn").addEventListener("click", function(e) {
+    handleLogout(e, this.href);
+  });
+
+  document.getElementById("logoutBtnNav").addEventListener("click", function(e) {
+    handleLogout(e, this.href);
+  });
+
+  document.getElementById("appointmentBtn").addEventListener("click", function(event) {
+    event.preventDefault();
+    Swal.fire({
+      title: "Go to Appointment Page?",
+      text: "You will be redirected to set/view appointments.",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "rgba(6, 68, 14, 1)",
+      cancelButtonColor: "#8cca8aff",
+      confirmButtonText: "Yes, proceed"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = this.href;
+      }
+    });
+  });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
 
 <?php
 $stmt->close();

@@ -199,7 +199,7 @@ $result = $conn->query("SELECT * FROM counselor_availability WHERE counselor_id=
   </form>
 
   <h3>My Availability</h3>
-  <table class="table table-bordered table-striped">
+  <table id="availabilityTable" class="table table-bordered table-striped">
     <thead class="table-dark">
       <tr>
         <th>Date</th>
@@ -209,27 +209,16 @@ $result = $conn->query("SELECT * FROM counselor_availability WHERE counselor_id=
       </tr>
     </thead>
     <tbody>
-      <?php if ($result->num_rows > 0): ?>
         <?php while($row = $result->fetch_assoc()): ?>
-        <tr>
-          <td><?= $row['available_date'] ?></td>
-          <td><?= date("h:i A", strtotime($row['start_time'])) ?></td>
-          <td><?= date("h:i A", strtotime($row['end_time'])) ?></td>
-          <td>
-            <a href="?delete_id=<?= $row['id'] ?>" 
-   class="btn btn-danger btn-sm delete-btn" 
-   data-id="<?= $row['id'] ?>">
-   Delete
-</a>
-
-          </td>
-        </tr>
-        <?php endwhile; ?>
-      <?php else: ?>
-        <tr>
-          <td colspan="4" class="text-center">No availability set yet</td>
-        </tr>
-      <?php endif; ?>
+  <tr>
+    <td><?= $row['available_date'] ?></td>
+    <td><?= date("h:i A", strtotime($row['start_time'])) ?></td>
+    <td><?= date("h:i A", strtotime($row['end_time'])) ?></td>
+    <td>
+      <a href="?delete_id=<?= $row['id'] ?>" class="btn btn-danger btn-sm delete-btn" data-id="<?= $row['id'] ?>">Delete</a>
+    </td>
+  </tr>
+<?php endwhile; ?>
     </tbody>
   </table>
 </div>
@@ -237,14 +226,17 @@ $result = $conn->query("SELECT * FROM counselor_availability WHERE counselor_id=
 <script>
 $(document).ready(function(){
 
-  let availTable = $('table').DataTable({
-    "pageLength": 5,
-    "lengthMenu": [5, 10, 20],
-    "order": [[0, "asc"], [1, "asc"]],
-    "columnDefs": [
-      { "orderable": false, "targets": 3 }
-    ]
-  });
+  let availTable = $('#availabilityTable').DataTable({
+  "pageLength": 5,
+  "lengthMenu": [5, 10, 20],
+  "order": [[0, "asc"], [1, "asc"]],
+  "columnDefs": [
+    { "orderable": false, "targets": 3 }
+  ],
+  "language": {
+    "emptyTable": "No availability set yet"
+  }
+});
 
   // SweetAlert for Delete
   $('table').on('click', '.btn-danger', function(e){

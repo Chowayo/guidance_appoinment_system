@@ -59,7 +59,8 @@ $result = $stmt->get_result();
   }
 
     .navbar {
-      background: linear-gradient(90deg, #005504ff, #003d2bff);
+      background: linear-gradient(90deg, #889700ff, #003d2bff);
+      box-shadow: 0 0 20px yellow;
     }
     .navbar-brand {
       color: #fff !important;
@@ -114,7 +115,7 @@ $result = $stmt->get_result();
       background-color: #a71d2a;
       transform: scale(1.05);
     }
-      .logo-navbar {
+    .logo-navbar {
      height: 40px;
      width: auto;
     }
@@ -211,7 +212,7 @@ $(document).ready(function(){
     }).then((result) => {
       if(result.isConfirmed){
         $.ajax({
-          url: "delete.php",
+          url: "student_delete.php",
           type: "POST",
           data: { student_id: student_id },
           success: function(res){

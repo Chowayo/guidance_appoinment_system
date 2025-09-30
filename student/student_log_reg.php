@@ -53,21 +53,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       justify-content: center;
       height: 100vh;
       margin: 0;
-      background: linear-gradient(135deg, #e0eb7dff, #dd87ffff);
+      background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
       font-family: 'Poppins', sans-serif;
     }
     .container-box {
-      background: #ffdd7eff;
+      background: #a7ff7eff;
       width: 850px;
       height: 500px;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 10px 25px rgba(255, 0, 0, 0.3);
       display: flex;
     }
     .welcome-container {
       width: 50%;
-      background: linear-gradient(135deg, #e28ffcff, #9900ffff);
+      background: linear-gradient(135deg, #0b8600ff, #f3f8a7ff);
       color: #fff;
       display: flex;
       flex-direction: column;
@@ -110,13 +110,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       margin-bottom: 15px;
     }
     .btn-custom {
-      background: #0072ff;
+      background: #646300ff;
       color: #fff;
       border-radius: 10px;
       transition: 0.3s;
     }
     .btn-custom:hover {
-      background: #0056b3;
+      background: #dfcc29ff;
+    }
+    .logo-gif {
+    width: 200px;
+    height: auto; 
+    margin-bottom: 20px;
+    mix-blend-mode: screen;
     }
   </style>
 </head>
@@ -125,7 +131,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container-box" id="box">
 
   <div class="welcome-container">
-    <h2 class= "fw-bold" style="font-family:Georgia, serif ">Welcome to Our Official School Website!</h2>
+    <img src="logo.gif" alt="School Logo" class="logo-gif">
+    <h2 class= "fw-bold" style="font-family:Georgia, serif ">Welcome to Official School Guidance Appointment Website!</h2>
     <p>Please Login/Register your info:</p>
     <div class="d-flex gap-2 mt-3">
       <button class="btn btn-light" onclick="showLogin()">Login</button>
@@ -138,7 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="form-container login-form">
       <?php if(!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
-      <h2>Login</h2>
+      <h2 style="font-family:Georgia, serif ">Login</h2>
       <form action="student_log_reg.php" method="POST">
         <input type="text" name="student_id" class="form-control" placeholder="Student ID" required>
         <input type="password" name="password" class="form-control" placeholder="Password" required>
@@ -148,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
  
     <div class="form-container register-form">
-      <h2>Register</h2>
+      <h2 style="font-family:Georgia, serif ">Register</h2>
       <form action="student_function.php" method="POST" id=addStudent>
         <input type="text" name="first_name" class="form-control" placeholder="First Name" required>
         <input type="text" name="last_name" class="form-control" placeholder="Last Name" required>

@@ -117,8 +117,10 @@ $result = $stmt->get_result();
   </a>
   <div class="ms-auto">
     <span class="navbar-text me-3 fw-bold">Welcome, <?= htmlspecialchars($_SESSION['first_name']); ?>!</span>
-    <a href="../counselor/counselor_logout.php" class="btn btn-danger">Logout</a>
+    <a href="counselor_logout.php" class="btn btn-danger">Logout</a>
+    <a href="change_password.php" class="btn btn-danger">Change Password</a>
   </div>
+  
 </nav>
 
 <body class="bg-light">
