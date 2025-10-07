@@ -32,31 +32,31 @@ $result = $stmt->get_result();
   <script src="../js/jquery.dataTables.min.js"></script>
   <script src="../js/sweetalert2@11.js"></script>
   <style>
-    body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  min-height: 100vh;
-  margin: 0;
-  background: linear-gradient(135deg, #cbf0ceff, #8ceb99ff);
-  position: relative;
-  overflow: hidden;
-  }
+      body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
+    position: relative;
+    overflow: hidden;
+    }
 
-  body::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: url('logo.jpg') no-repeat center;
-  background-size: 1000px;
-  opacity: 0.10;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  padding-top: 100%;
-  background-position: center 480px;
-  }
+    body::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: url('logo.jpg') no-repeat center;
+    background-size: 1000px;
+    opacity: 0.10;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    padding-top: 100%;
+    background-position: center 480px;
+    }
 
     .navbar {
       background: linear-gradient(90deg, #889700ff, #003d2bff);

@@ -33,14 +33,35 @@ if (!$student) {
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
       body {
-          background: linear-gradient(135deg, #f3f8a7ff, #0b8600ff);
-          font-family: 'Poppins', sans-serif;
-          min-height: 100vh;
+          background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
+          position: relative;
+          background-repeat: no-repeat;
+          background-attachment: fixed;
+          background-size: cover;
       }
+
+      body::before {
+      content: "";
+      position: absolute;
+      top: 95%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: url('logo.jpg') no-repeat center;
+      background-size: 1000px;
+      opacity: 0.10;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      padding-top: 100%;
+      background-position: center 480px;
+      }
+
       .dashboard-container {
           max-width: 800px;
           margin: 80px auto 50px auto;
           background: #fff;
+          opacity: 0.95;
           border-radius: 15px;
           padding: 40px;
           box-shadow: 0 10px 25px rgba(0,0,0,0.3);
@@ -58,13 +79,17 @@ if (!$student) {
         height: 40px;
         width: auto;
       }
+      .navbar{
+        background: linear-gradient(90deg, #889700ff, #003d2bff);
+        box-shadow: 0 0 20px yellow;
+      }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
     <div class="container-fluid">
-      <a class="navbar-brand fst-italic fw-bold" href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
+      <a class="navbar-brand fst-italic fw-bold " href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -74,10 +99,10 @@ if (!$student) {
             <a class="nav-link active text-warning fw-bold" aria-current="page" href="#">Dashboard</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-white fw-bold" href="student_appointment.php">Appointments</a>
+            <a class="nav-link text-info fw-bold" href="student_appointment.php">Appointments</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link text-dark fw-bold" href="student_logout.php" id="logoutBtnNav">Logout</a>
+            <a class="nav-link text-danger fw-bold" href="student_logout.php" id="logoutBtnNav">Logout</a>
           </li>
         </ul>
       </div>
@@ -85,7 +110,7 @@ if (!$student) {
   </nav>
 
   <div class="dashboard-container text-center">
-      <h1>Welcome, <?= htmlspecialchars($student['first_name']); ?>!</h1>
+      <h1 class="fw-bold">Welcome, <?= htmlspecialchars($student['first_name']); ?>!</h1>
       <p>Here’s your information:</p>
       <div class="text-start mt-4">
           <p><span class="info-label">Student ID:</span> <?= htmlspecialchars($student['student_id']); ?></p>

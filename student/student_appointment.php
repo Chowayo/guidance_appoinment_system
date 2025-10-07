@@ -33,10 +33,12 @@ $stmt->execute();
 $counselor = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// fetch counselor availability
+// fetch counselor availability - ONLY AVAILABLE SLOTS (is_available = 1)
 $sql = "SELECT id, available_date, start_time, end_time 
         FROM counselor_availability 
-        WHERE counselor_id=? AND available_date >= CURDATE()
+        WHERE counselor_id=? 
+        AND available_date >= CURDATE()
+        AND is_available = 1
         ORDER BY available_date, start_time";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $counselor['counselor_id']);
@@ -88,7 +90,7 @@ while ($row = $result->fetch_assoc()) {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
     margin: 0;
-    background: linear-gradient(135deg, #074b0cff, #8ceb99ff);
+    background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
     position: relative;
     overflow: hidden;
     }
@@ -135,15 +137,68 @@ while ($row = $result->fetch_assoc()) {
      height: 50px;
      width: auto;
     }
+    .logo-navbar {
+      height: 40px;
+      width: auto;
+    }
+    .navbar{
+      background: linear-gradient(90deg, #889700ff, #003d2bff);
+      box-shadow: 0 0 20px yellow;
+    }
+    
+    .no-slots-message {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .no-slots-message i {
+      font-size: 60px;
+      color: #ffc107;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body class="bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
+    <div class="container-fluid">
+      <a class="navbar-brand fst-italic fw-bold" href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active text-warning fw-bold" aria-current="page" href="landing_page.php">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-info fw-bold" href="student_appointment.php">Appointments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-danger fw-bold" href="student_logout.php" id="logoutBtnNav">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 <div class="container mt-5">
   <h2 class="text-success shadow p-3 mb-5 bg-body rounded p-3 mb-2 bg-success text-success">
     <img src="logo.jpg" alt="Logo" class="logo me-2">Book Appointment
     <img src="logo.jpg" alt="Logo" class="logo me-2">
   </h2>
 
+  <?php if (empty($slots)): ?>
+    <div class="no-slots-message">
+      <div style="font-size: 60px; color: #ffc107; margin-bottom: 20px;">📅</div>
+      <h3 style="color: #6c757d;">No Available Slots</h3>
+      <p style="color: #6c757d; margin-top: 10px;">
+        There are currently no available appointment slots. Please check back later or contact your counselor.
+      </p>
+      <a href="landing_page.php" class="btn btn-primary mt-3">Back to Dashboard</a>
+    </div>
+  <?php else: ?>
   <form id="studentAppointmentForm" class="card p-4">
     <input type="hidden" name="counselor_id" value="<?= $counselor['counselor_id'] ?>">
     <input type="hidden" name="student_id" value="<?= $student['student_id'] ?>">
@@ -160,6 +215,7 @@ while ($row = $result->fetch_assoc()) {
           </option>
         <?php endforeach; ?>
       </select>
+      <small class="text-muted">Showing <?= count($slots) ?> available time slot(s)</small>
     </div>
 
     <div class="mb-3">
@@ -169,6 +225,7 @@ while ($row = $result->fetch_assoc()) {
 
     <button type="submit" class="btn btn-success">Submit Appointment</button>
   </form>
+  <?php endif; ?>
 
 </div>
 
@@ -202,7 +259,7 @@ $(document).ready(function() {
             icon: 'success',
             confirmButtonText: 'OK'
           }).then(() => {
-            $('#studentAppointmentForm')[0].reset();
+            window.location.href = 'student_appointment.php';
           });
         } else {
           Swal.fire({
