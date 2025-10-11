@@ -1,5 +1,5 @@
 <?php
-session_start();
+include '../session_config.php';
 
 if (!isset($_SESSION['student_id'])) {
     header("Location: student_log_reg.php");
@@ -83,16 +83,16 @@ while ($row = $result->fetch_assoc()) {
   <title>Book Appointment</title>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
   <script src="../js/jquery-3.6.0.min.js"></script>
-<script src="../js/sweetalert2@11.js"></script>
-<script src="../js/bootstrap.bundle.min.js"></script>
+  <script src="../js/sweetalert2@11.js"></script>
+  <script src="../js/bootstrap.bundle.min.js"></script>
   <style>
     body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
-    position: relative;
-    overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
+      position: relative;
+      overflow: hidden;
     }
     .card {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -104,7 +104,7 @@ while ($row = $result->fetch_assoc()) {
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
     }
 
-    .form-select:hover {
+    .form-select:hover, .form-control:hover {
       border-color: #28a745;
       box-shadow: 0 0 8px rgba(40, 167, 69, 0.4);
       transition: 0.3s;
@@ -134,8 +134,8 @@ while ($row = $result->fetch_assoc()) {
       letter-spacing: 1px;
     }
     .logo{
-     height: 50px;
-     width: auto;
+      height: 50px;
+      width: auto;
     }
     .logo-navbar {
       height: 40px;
@@ -158,6 +158,39 @@ while ($row = $result->fetch_assoc()) {
       font-size: 60px;
       color: #ffc107;
       margin-bottom: 20px;
+    }
+    
+    .urgency-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .urgency-low {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .urgency-medium {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .urgency-high {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .required-field::after {
+      content: " *";
+      color: red;
+    }
+    
+    #purpose_other_field {
+      display: none;
     }
   </style>
 </head>
@@ -203,10 +236,52 @@ while ($row = $result->fetch_assoc()) {
     <input type="hidden" name="counselor_id" value="<?= $counselor['counselor_id'] ?>">
     <input type="hidden" name="student_id" value="<?= $student['student_id'] ?>">
 
+    <!-- Purpose of Appointment -->
     <div class="mb-3">
-      <label class="form-label">Select Available Slot</label>
+      <label class="form-label required-field">Purpose of Appointment</label>
+      <select name="purpose" id="purpose" class="form-select" required>
+        <option value="">-- Select Purpose --</option>
+        <option value="Academic concern">Academic concern</option>
+        <option value="Personal problem">Personal problem</option>
+        <option value="Family issue">Family issue</option>
+        <option value="Career guidance">Career guidance</option>
+        <option value="Counseling follow-up">Counseling follow-up</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+
+    <!-- Others - Specify Field (Hidden by default) -->
+    <div class="mb-3" id="purpose_other_field">
+      <label class="form-label">Please specify</label>
+      <input type="text" name="purpose_other" id="purpose_other" class="form-control" placeholder="Enter specific purpose...">
+    </div>
+
+    <!-- Urgency Level -->
+    <div class="mb-3">
+      <label class="form-label required-field">Urgency Level</label>
+      <select name="urgency_level" id="urgency_level" class="form-select" required>
+        <option value="">-- Select Urgency --</option>
+        <option value="Low">🟢 Low - Can wait for regular scheduling</option>
+        <option value="Medium">🟡 Medium - Need attention soon</option>
+        <option value="High">🔴 High - Urgent matter</option>
+      </select>
+      <small class="text-muted">Select the urgency level based on your situation</small>
+    </div>
+
+    <!-- Email for Confirmation -->
+    <div class="mb-3">
+      <label class="form-label required-field">Email Address for Confirmation</label>
+      <input type="email" name="confirmation_email" id="confirmation_email" class="form-control" 
+             value="<?= htmlspecialchars($student['email']) ?>" required 
+             placeholder="Enter your email address">
+      <small class="text-muted">We'll send appointment confirmation to this email</small>
+    </div>
+
+    <!-- Select Available Slot -->
+    <div class="mb-3">
+      <label class="form-label required-field">Select Available Slot</label>
       <select name="slot" class="form-select" required>
-        <option value="">-- Select --</option>
+        <option value="">-- Select Time Slot --</option>
         <?php foreach ($slots as $slot): ?>
           <option value="<?= $slot['date'].'|'.$slot['start_time'] ?>">
             <?= date("F j, Y", strtotime($slot['date'])) ?> 
@@ -218,12 +293,16 @@ while ($row = $result->fetch_assoc()) {
       <small class="text-muted">Showing <?= count($slots) ?> available time slot(s)</small>
     </div>
 
+    <!-- Additional Notes (Optional) -->
     <div class="mb-3">
-      <label class="form-label">Reason for Appointment</label>
-      <textarea name="reason" class="form-control" rows="3" required placeholder="Enter the reason for your appointment..."></textarea>
+      <label class="form-label">Additional Notes/Details (Optional)</label>
+      <textarea name="reason" class="form-control" rows="4" placeholder="Provide any additional details about your appointment (optional)..."></textarea>
+      <small class="text-muted">Optional: Add any specific details the counselor should know</small>
     </div>
 
-    <button type="submit" class="btn btn-success">Submit Appointment</button>
+    <button type="submit" class="btn btn-success btn-lg w-100">
+      📅 Submit Appointment Request
+    </button>
   </form>
   <?php endif; ?>
 
@@ -231,8 +310,31 @@ while ($row = $result->fetch_assoc()) {
 
 <script>
 $(document).ready(function() {
+  // Show/hide "Others" text field
+  $('#purpose').on('change', function() {
+    if ($(this).val() === 'Others') {
+      $('#purpose_other_field').slideDown();
+      $('#purpose_other').prop('required', true);
+    } else {
+      $('#purpose_other_field').slideUp();
+      $('#purpose_other').prop('required', false);
+      $('#purpose_other').val('');
+    }
+  });
+
+  // Form submission
   $('#studentAppointmentForm').on('submit', function(e) {
     e.preventDefault();
+
+    // Validate purpose_other if "Others" is selected
+    if ($('#purpose').val() === 'Others' && $('#purpose_other').val().trim() === '') {
+      Swal.fire({
+        title: 'Validation Error',
+        text: 'Please specify the purpose when selecting "Others"',
+        icon: 'warning'
+      });
+      return;
+    }
 
     var formData = new FormData(this);
     formData.append('action', 'book_appointment');
@@ -255,7 +357,7 @@ $(document).ready(function() {
         if (response.success) {
           Swal.fire({
             title: 'Success!',
-            text: response.message || 'Appointment booked successfully!',
+            html: response.message || 'Appointment booked successfully!<br><small>A confirmation email has been sent.</small>',
             icon: 'success',
             confirmButtonText: 'OK'
           }).then(() => {

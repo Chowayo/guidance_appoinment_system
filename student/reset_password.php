@@ -1,8 +1,8 @@
 <?php
 date_default_timezone_set('Asia/Manila');
 
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 
 $message = '';
 $messageType = '';

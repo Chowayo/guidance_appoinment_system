@@ -1,5 +1,6 @@
 <?php
-session_start();
+include '../session_config.php';
+include '../db/dbconn.php';
 ?>
 
 <!DOCTYPE html>
@@ -7,43 +8,49 @@ session_start();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>counselor Portal</title>
+  <title>Counselor Portal</title>
   <link href="../css/bootstrap.min.css" rel="stylesheet">
   <script src="../js/sweetalert2@11.js"></script>
 
   <style>
     body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #141E30, #243B55);
-      font-family: 'Poppins', sans-serif;
+    background-image: url('Backdrop.jpg');
+    background-size: cover;         
+    background-repeat: no-repeat;   
+    background-attachment: fixed;   
+    background-position: center;    
+    height: 100vh;                  
+    display: flex;                  
+    justify-content: center;
+    align-items: center;
+    margin: 0;
     }
 
     .container-box {
-      background: #fff;
+      background: rgba(167, 255, 126, 0.50); /* same green, 85% opacity */
       width: 850px;
       height: 500px;
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       display: flex;
-      position: relative;
+      border-style: outset;
+      border-color: #a0fda3ff;
     }
-
     .welcome-container {
-      width: 40%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      width: 50%;
+      background: rgba(167, 255, 126, 0.100);
       color: #fff;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-      padding: 30px;
-      z-index: 3;
+      padding: 40px;
+      transition: all 0.6s ease-in-out;
+      border-style: outset;
+      border-radius: 15px;
+      border-color: #a0fda3ff;
     }
 
     .form-area {
@@ -61,11 +68,11 @@ session_start();
       transition: all 0.6s ease-in-out;
     }
 
-    /* Default positions */
+
     .login-form { left: 0; z-index: 2; }
     .notice-form { left: 100%; opacity: 0; z-index: 1; }
 
-    /* When active → swap */
+
     .container-box.active .login-form {
       left: -100%;
       opacity: 0;
@@ -82,13 +89,19 @@ session_start();
       margin-bottom: 15px;
     }
     .btn-custom {
-      background: #243B55;
+      background: #646300ff;
       color: #fff;
       border-radius: 10px;
       transition: 0.3s;
     }
     .btn-custom:hover {
-      background: #141E30;
+      background: #dfcc29ff;
+    }
+    .logo-gif {
+    width: 200px;
+    height: auto; 
+    margin-bottom: 20px;
+    mix-blend-mode: screen;
     }
   </style>
 </head>
@@ -97,6 +110,7 @@ session_start();
 <div class="container-box" id="box">
 
   <div class="welcome-container">
+    <img src="logo.gif" alt="School Logo" class="logo-gif">
     <h2 class="fw-bold">Counselor Portal</h2>
     <p>Restricted Site: Authorized Staff Access Only</p>
     <div class="d-flex flex-column gap-2 mt-3">
@@ -110,7 +124,7 @@ session_start();
 
 
     <div class="form-container login-form">
-  <h2>Counselor Login</h2>
+  <h2 style="font-family:Georgia, serif ">Counselor Login</h2>
   <form action="counselor_function.php" method="POST">
     <input type="text" name="counselor_id" class="form-control" placeholder="Counselor ID" required>
     <input type="password" name="password" class="form-control" placeholder="Password" required>

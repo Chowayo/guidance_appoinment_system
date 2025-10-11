@@ -1,5 +1,5 @@
 <?php
-session_start();
+include '../session_config.php';
 
 if (!isset($_SESSION['counselor_id'])) {
     header("Location: ../counselor/counselor_login.php");

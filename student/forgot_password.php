@@ -1,6 +1,6 @@
 <?php
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 require_once 'password_reset_email.php';
 
 $message = '';

@@ -1,5 +1,5 @@
 <?php
-session_start();
+include '../session_config.php';
 
 if (!isset($_SESSION['student_id'])) {
     header("Location: student_log_reg.php");
@@ -83,23 +83,31 @@ if (!$student) {
         background: linear-gradient(90deg, #889700ff, #003d2bff);
         box-shadow: 0 0 20px yellow;
       }
+      .navbar-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow">
     <div class="container-fluid">
-      <a class="navbar-brand fst-italic fw-bold " href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
+      <a class="navbar-brand fst-italic fw-bold" href="#"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN PORTAL</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav navbar-actions">
           <li class="nav-item">
             <a class="nav-link active text-warning fw-bold" aria-current="page" href="#">Dashboard</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-info fw-bold" href="student_appointment.php">Appointments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-warning fw-bold" href="student_change_password.php">Change Password</a>
           </li>
           <li class="nav-item">
             <a class="nav-link text-danger fw-bold" href="student_logout.php" id="logoutBtnNav">Logout</a>
@@ -111,7 +119,7 @@ if (!$student) {
 
   <div class="dashboard-container text-center">
       <h1 class="fw-bold">Welcome, <?= htmlspecialchars($student['first_name']); ?>!</h1>
-      <p>Here’s your information:</p>
+      <p>Here's your information:</p>
       <div class="text-start mt-4">
           <p><span class="info-label">Student ID:</span> <?= htmlspecialchars($student['student_id']); ?></p>
           <p><span class="info-label">Full Name:</span> <?= htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></p>
@@ -138,29 +146,8 @@ if (!$student) {
     });
   }
 
-  document.getElementById("logoutBtn").addEventListener("click", function(e) {
-    handleLogout(e, this.href);
-  });
-
   document.getElementById("logoutBtnNav").addEventListener("click", function(e) {
     handleLogout(e, this.href);
-  });
-
-  document.getElementById("appointmentBtn").addEventListener("click", function(event) {
-    event.preventDefault();
-    Swal.fire({
-      title: "Go to Appointment Page?",
-      text: "You will be redirected to set/view appointments.",
-      icon: "info",
-      showCancelButton: true,
-      confirmButtonColor: "rgba(6, 68, 14, 1)",
-      cancelButtonColor: "#8cca8aff",
-      confirmButtonText: "Yes, proceed"
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = this.href;
-      }
-    });
   });
   </script>
 

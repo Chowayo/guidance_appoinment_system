@@ -1,6 +1,6 @@
 <?php
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['student_id'])) {
     $student_id = intval($_POST["student_id"]);

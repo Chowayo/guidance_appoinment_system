@@ -1,7 +1,7 @@
 <?php
 header('Content-Type: application/json');
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 
 if (!isset($_SESSION['counselor_id'])) {
     echo json_encode(["data" => []]);
@@ -10,9 +10,10 @@ if (!isset($_SESSION['counselor_id'])) {
 
 $counselor_id = $_SESSION['counselor_id'];
 
-// appointments for this counselor
+// Get appointments for this counselor with new fields
 $sql = "SELECT a.appointment_id, a.date, a.time, a.reason, a.status,
-               s.first_name, s.last_name, s.grade_level
+               a.purpose, a.urgency_level, a.confirmation_email,
+               s.student_id, s.first_name, s.last_name, s.grade_level
         FROM appointments a
         JOIN student s ON a.student_id = s.student_id
         WHERE a.counselor_id = ?
@@ -27,31 +28,88 @@ $appointments = [];
 $count = 1;
 
 while ($row = $result->fetch_assoc()) {
+    $studentName = htmlspecialchars($row['first_name'] . ' ' . $row['last_name']);
+    $appointmentDate = date("F j, Y", strtotime($row['date']));
+    $appointmentTime = date("h:i A", strtotime($row['time']));
+    
+    // Status badge
     if ($row['status'] === 'pending') {
         $statusBadge = '<span class="badge bg-warning">Pending</span>';
         $actions = "
-            <a href='counselor_update_function.php?id={$row['appointment_id']}&action=approve' class='btn btn-sm btn-success mb-1'>Approve</a>
-            <a href='counselor_update_function.php?id={$row['appointment_id']}&action=decline' class='btn btn-sm btn-danger mb-1'>Decline</a>
-            <a href='counselor_update_function.php?id={$row['appointment_id']}&action=reschedule' class='btn btn-sm btn-info mb-1'>Reschedule</a>
+            <a href='counselor_update_function.php?id={$row['appointment_id']}&action=approve' class='btn btn-sm btn-success mb-1'>✅ Approve</a>
+            <a href='counselor_update_function.php?id={$row['appointment_id']}&action=decline' class='btn btn-sm btn-danger mb-1'>❌ Decline</a>
+            <a href='#' class='reschedule-appointment btn btn-sm btn-info mb-1' 
+               data-id='{$row['appointment_id']}' 
+               data-student='{$studentName}' 
+               data-date='{$appointmentDate}' 
+               data-time='{$appointmentTime}'>
+               🔄 Reschedule
+            </a>
         ";
     } elseif ($row['status'] === 'approved') {
         $statusBadge = '<span class="badge bg-success">Approved</span>';
-        $actions = "<span class='text-muted'>No actions</span>";
+        $actions = "
+            <a href='#' class='reschedule-appointment btn btn-sm btn-info mb-1' 
+               data-id='{$row['appointment_id']}' 
+               data-student='{$studentName}' 
+               data-date='{$appointmentDate}' 
+               data-time='{$appointmentTime}'>
+               🔄 Reschedule
+            </a>
+            <a href='counselor_delete_function.php?action=delete_single&id={$row['appointment_id']}' class='btn btn-sm btn-danger mb-1'>🗑️ Delete</a>
+        ";
     } elseif ($row['status'] === 'declined') {
         $statusBadge = '<span class="badge bg-danger">Declined</span>';
-        $actions = "<span class='text-muted'>No actions</span>";
-    } else {
+        $actions = "
+            <a href='counselor_delete_function.php?action=delete_single&id={$row['appointment_id']}' class='btn btn-sm btn-danger mb-1'>🗑️ Delete</a>
+        ";
+    } else { // rescheduled
         $statusBadge = '<span class="badge bg-info">Rescheduled</span>';
-        $actions = "<span class='text-muted'>No actions</span>";
+        $actions = "
+            <a href='#' class='reschedule-appointment btn btn-sm btn-info mb-1' 
+               data-id='{$row['appointment_id']}' 
+               data-student='{$studentName}' 
+               data-date='{$appointmentDate}' 
+               data-time='{$appointmentTime}'>
+               🔄 Reschedule Again
+            </a>
+            <a href='counselor_delete_function.php?action=delete_single&id={$row['appointment_id']}' class='btn btn-sm btn-danger mb-1'>🗑️ Delete</a>
+        ";
     }
+
+    // Urgency badge with color coding
+    $urgencyLevel = $row['urgency_level'] ?? 'Low';
+    switch ($urgencyLevel) {
+        case 'High':
+            $urgencyBadge = '<span class="badge urgency-high">🔴 High</span>';
+            break;
+        case 'Medium':
+            $urgencyBadge = '<span class="badge urgency-medium">🟡 Medium</span>';
+            break;
+        case 'Low':
+        default:
+            $urgencyBadge = '<span class="badge urgency-low">🟢 Low</span>';
+            break;
+    }
+
+    // Purpose - handle null/empty values
+    $purpose = $row['purpose'] ?? 'Not specified';
+    
+    // Additional notes - with tooltip for long text
+    $notes = $row['reason'] ?? 'No additional notes';
+    $notesShort = strlen($notes) > 50 ? substr($notes, 0, 50) . '...' : $notes;
+    $notesDisplay = '<span class="notes-cell" title="' . htmlspecialchars($notes) . '">' . htmlspecialchars($notesShort) . '</span>';
 
     $appointments[] = [
         $count++,
-        htmlspecialchars($row['first_name'] . ' ' . $row['last_name']),
+        htmlspecialchars($row['student_id']),
+        $studentName,
         htmlspecialchars($row['grade_level']),
-        date("F j, Y", strtotime($row['date'])),
-        date("h:i A", strtotime($row['time'])),
-        htmlspecialchars($row['reason']),
+        htmlspecialchars($purpose),
+        $urgencyBadge,
+        $appointmentDate,
+        $appointmentTime,
+        $notesDisplay,
         $statusBadge,
         $actions
     ];
@@ -61,3 +119,4 @@ $stmt->close();
 $conn->close();
 
 echo json_encode(["data" => $appointments]);
+?>

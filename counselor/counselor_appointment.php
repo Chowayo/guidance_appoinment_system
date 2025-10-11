@@ -1,6 +1,6 @@
 <?php
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 
 if (!isset($_SESSION['counselor_id'])) {
     header("Location: ../counselor/counselor_login.php");
@@ -23,6 +23,7 @@ $stmt->close();
 
 <!DOCTYPE html>
 <html lang="en">
+<head>
   <meta charset="UTF-8">
   <title>Counselor Dashboard</title>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
@@ -30,16 +31,33 @@ $stmt->close();
   <script src="../js/jquery-3.6.0.min.js"></script>
   <script src="../js/jquery.dataTables.min.js"></script>
   <script src="../js/sweetalert2@11.js"></script>
-   <style>
-    
+  <style>
     body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    min-height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, #074b0cff, #8ceb99ff);
-    position: relative;
-    overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
+      position: relative;
+      overflow: hidden;
     }
+
+    body::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: url('logo.jpg') no-repeat center;
+      background-size: 1000px;
+      opacity: 0.10;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      padding-top: 100%;
+      background-position: center 480px;
+    }
+
     h2 {
       font-weight: 700;
       letter-spacing: 1px;
@@ -53,14 +71,30 @@ $stmt->close();
     }
 
     .badge {
-      font-size: 0.9rem;
-      padding: 0.5em 0.8em;
+      font-size: 0.85rem;
+      padding: 0.4em 0.7em;
       border-radius: 8px;
+      font-weight: 600;
     }
     .badge.bg-warning { box-shadow: 0 0 8px rgba(255,193,7,0.6); }
     .badge.bg-success { box-shadow: 0 0 8px rgba(40,167,69,0.6); }
     .badge.bg-danger  { box-shadow: 0 0 8px rgba(220,53,69,0.6); }
     .badge.bg-info    { box-shadow: 0 0 8px rgba(23,162,184,0.6); }
+
+    .urgency-low {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    .urgency-medium {
+      background-color: #ffc107;
+      color: #000;
+    }
+    
+    .urgency-high {
+      background-color: #dc3545;
+      color: white;
+    }
 
     .btn {
       transition: all 0.3s ease;
@@ -77,12 +111,12 @@ $stmt->close();
       box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
     .logo{
-     height: 100px;
-     width: auto;
+      height: 100px;
+      width: auto;
     }
     thead.table-dark {
-    background: linear-gradient(135deg, #1b5e20, #43a047) !important;
-    color: #fff !important;
+      background: linear-gradient(135deg, #1b5e20, #43a047) !important;
+      color: #fff !important;
     }
   
     .navbar {
@@ -118,13 +152,6 @@ $stmt->close();
       background-color: #eef4ff;
       box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
     }
-    .badge {
-      padding: 6px 10px;
-      font-size: 0.85rem;
-    }
-    .btn {
-      transition: all 0.2s ease-in-out;
-    }
     .btn-primary {
       background-color: #003a13ff;
       border: none;
@@ -141,9 +168,23 @@ $stmt->close();
       background-color: #a71d2a;
       transform: scale(1.05);
     }
-      .logo-navbar {
-     height: 40px;
-     width: auto;
+    .logo-navbar {
+      height: 40px;
+      width: auto;
+    }
+    
+    /* Tooltip for additional notes */
+    .notes-cell {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: help;
+    }
+    
+    /* Make table scrollable on small screens */
+    .table-responsive {
+      overflow-x: auto;
     }
   </style>
 </head>
@@ -156,36 +197,56 @@ $stmt->close();
     <a href="../counselor/counselor_logout.php" class="btn btn-danger">Logout</a>
   </div>
 </nav>
-   
-<body class="bg-light">
+
 <div class="container mt-5 text-success shadow p-3 mb-5 bg-body rounded p-3 mb-2 bg-success text-success">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <img src="logo.jpg" alt="Logo" class="logo me-2"><h2>My Appointments</h2>
-    <div>
-        <a href="counselor_delete_function.php?action=clear_all" class="btn btn-warning me-2 clear-all-link">Clear All</a> <!-- Added class for JS targeting -->
+  
+  <?php if (isset($_SESSION['message'])): ?>
+    <div class="alert alert-<?= $_SESSION['message_type'] === 'success' ? 'success' : 'danger' ?> alert-dismissible fade show" role="alert">
+      <?= htmlspecialchars($_SESSION['message']) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+    <?php 
+      unset($_SESSION['message']);
+      unset($_SESSION['message_type']);
+    ?>
+  <?php endif; ?>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center">
+      <img src="logo.jpg" alt="Logo" class="logo me-2">
+      <h2 class="mb-0">My Appointments</h2>
+    </div>
+    <div>
+      <a href="counselor_add_appointment.php" class="btn btn-primary me-2">➕ Add Appointment</a>
+      <a href="counselor_delete_function.php?action=clear_all" class="btn btn-warning me-2 clear-all-link">Clear All</a>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table id="appointmentsTable" class="table table-striped table-success table-bordered table-hover">
+      <thead class="table-warning">
+        <tr>
+          <th>#</th>
+          <th>Student ID</th>
+          <th>Student Name</th>
+          <th>Grade</th>
+          <th>Purpose</th>
+          <th>Urgency</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Additional Notes</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data loaded via AJAX -->
+      </tbody>
+    </table>
+  </div>
 </div>
 
-  <table id="appointmentsTable" class="table table-bordered table-hover table-striped">
-    <thead class="table-dark">
-      <tr>
-        <th>#</th>
-        <th>Student</th>
-        <th>Grade</th>
-        <th>Date</th>
-        <th>Time</th>
-        <th>Reason</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      
-    </tbody>
-  </table>
-</div>
-
-  <script>
+<script>
 $(document).ready(function(){
   var table = $('#appointmentsTable').DataTable({
     "ajax": {
@@ -193,24 +254,27 @@ $(document).ready(function(){
       "dataSrc": "data"
     },
     "columns": [
-      { "data": 0 },
-      { "data": 1 },
-      { "data": 2 },
-      { "data": 3 },
-      { "data": 4 },
-      { "data": 5 },
-      { "data": 6 },
-      { "data": 7 }
+      { "data": 0 },  // #
+      { "data": 1 },  // Student ID
+      { "data": 2 },  // Student Name
+      { "data": 3 },  // Grade
+      { "data": 4 },  // Purpose
+      { "data": 5 },  // Urgency
+      { "data": 6 },  // Date
+      { "data": 7 },  // Time
+      { "data": 8 },  // Additional Notes
+      { "data": 9 },  // Status
+      { "data": 10 }  // Actions
     ],
     "paging": true,
     "searching": true,
     "ordering": true,
     "info": true,
     "pageLength": 10,
-    "order": [[3, "asc"]],
+    "order": [[6, "asc"], [7, "asc"]],
     "columnDefs": [
-      { "orderable": false, "targets": [0, 7] },
-      { "searchable": false, "targets": [0, 7] }
+      { "orderable": false, "targets": [0, 10] },
+      { "searchable": false, "targets": [0, 10] }
     ],
     "language": {
       "search": "Search appointments:",
@@ -221,7 +285,8 @@ $(document).ready(function(){
         "last": "Last",
         "next": "Next",
         "previous": "Previous"
-      }
+      },
+      "emptyTable": "No appointments found"
     },
     "drawCallback": function(settings) {
       var api = this.api();
@@ -231,50 +296,270 @@ $(document).ready(function(){
     }
   });
 
-  // reload every 30 seconds
+  // Reload every 30 seconds
   setInterval(function () {
     table.ajax.reload(null, false);
   }, 30000);
+
+  // View Details Modal
+  $(document).on('click', '.view-details', function(e) {
+    e.preventDefault();
+    
+    var $btn = $(this);
+    
+    var studentName = $btn.attr('data-student');
+    var studentNum = $btn.attr('data-studentnum');
+    var grade = $btn.attr('data-grade');
+    var purpose = $btn.attr('data-purpose');
+    var urgency = $btn.attr('data-urgency');
+    var date = $btn.attr('data-date');
+    var time = $btn.attr('data-time');
+    var notes = $btn.attr('data-notes');
+    var email = $btn.attr('data-email');
+    var status = $btn.attr('data-status');
+    
+    var urgencyColor = urgency === 'High' ? '#dc3545' : 
+                       urgency === 'Medium' ? '#ffc107' : '#28a745';
+    var urgencyIcon = urgency === 'High' ? '🔴' : 
+                      urgency === 'Medium' ? '🟡' : '🟢';
+    
+    Swal.fire({
+      title: '📋 Appointment Details',
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Student ID:</strong><br>
+            <span style="font-size: 16px; font-family: monospace; background: #f0f0f0; padding: 5px 10px; border-radius: 5px;">${studentNum}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Student Name:</strong><br>
+            <span style="font-size: 18px;">${studentName}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Grade Level:</strong><br>
+            <span>${grade}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Purpose:</strong><br>
+            <span>${purpose}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Urgency Level:</strong><br>
+            <span style="background-color: ${urgencyColor}; color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold;">
+              ${urgencyIcon} ${urgency}
+            </span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Appointment Date:</strong><br>
+            <span>${date}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Appointment Time:</strong><br>
+            <span>${time}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Contact Email:</strong><br>
+            <span>${email}</span>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <strong style="color: #666;">Additional Notes:</strong><br>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #007bff;">
+              ${notes}
+            </div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 10px; background: #e7f3ff; border-radius: 5px;">
+            <strong style="color: #0066cc;">Status:</strong> 
+            <span style="text-transform: capitalize; font-weight: bold;">${status}</span>
+          </div>
+        </div>
+      `,
+      width: '600px',
+      confirmButtonText: 'Close',
+      confirmButtonColor: '#28a745'
+    });
+  });
+}); // <-- Close the document.ready here
+
+// SweetAlert for single delete
+$('#appointmentsTable').on('click', 'a[href*="action=delete_single"]', function(e) {
+  e.preventDefault();
+  var link = $(this).attr('href');
+  
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "This will permanently delete this appointment!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = link;
+    }
+  });
 });
 
-  $('#appointmentsTable').on('click', 'a[href*="action=delete_single"]', function(e) {
-    e.preventDefault();
-    var link = $(this).attr('href');
-    
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "This will permanently delete this appointment!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = link;
-      }
-    });
+// SweetAlert Clear All
+$('.clear-all-link').on('click', function(e) {
+  e.preventDefault();
+  var link = $(this).attr('href');
+  
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "This will clear ALL appointments! This action cannot be undone.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, clear all!'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = link;
+    }
   });
+}); // <-- Close the Clear All handler here
 
-  // SweetAlert Clear All
-  $('.clear-all-link').on('click', function(e) {
-    e.preventDefault();
-    var link = $(this).attr('href');
-    
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "This will clear ALL appointments! This action cannot be undone.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, clear all!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = link;
+// Reschedule Appointment Modal (SEPARATE HANDLER)
+$(document).on('click', '.reschedule-appointment', function(e) {
+  e.preventDefault();
+  
+  var appointmentId = $(this).attr('data-id');
+  var studentName = $(this).attr('data-student');
+  var currentDate = $(this).attr('data-date');
+  var currentTime = $(this).attr('data-time');
+  
+  Swal.fire({
+    title: '🔄 Reschedule Appointment',
+    html: `
+      <div style="text-align: left; padding: 10px;">
+        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+          <strong style="color: #666;">Student:</strong> ${studentName}<br>
+          <strong style="color: #666;">Current Date:</strong> ${currentDate}<br>
+          <strong style="color: #666;">Current Time:</strong> ${currentTime}
+        </div>
+        
+        <form id="rescheduleForm">
+          <div style="margin-bottom: 15px; text-align: left;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              New Date <span style="color: red;">*</span>
+            </label>
+            <input type="date" id="new_date" class="swal2-input" 
+                   style="width: 90%; margin: 0;" 
+                   min="${new Date().toISOString().split('T')[0]}" required>
+          </div>
+          
+          <div style="margin-bottom: 15px; text-align: left;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              New Time <span style="color: red;">*</span>
+            </label>
+            <input type="time" id="new_time" class="swal2-input" 
+                   style="width: 90%; margin: 0;" required>
+          </div>
+          
+          <div style="margin-bottom: 15px; text-align: left;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #555;">
+              Reason for Rescheduling
+            </label>
+            <textarea id="reschedule_reason" class="swal2-textarea" 
+                      style="width: 90%; margin: 0; height: 100px;" 
+                      placeholder="Optional: Explain why you're rescheduling..."></textarea>
+          </div>
+        </form>
+        
+        <div style="background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107; margin-top: 15px;">
+          <small style="color: #856404;">
+            <strong>Note:</strong> The student will receive an email notification about the rescheduled appointment.
+          </small>
+        </div>
+      </div>
+    `,
+    width: '600px',
+    showCancelButton: true,
+    confirmButtonText: 'Reschedule',
+    cancelButtonText: 'Cancel',
+    confirmButtonColor: '#17a2b8',
+    cancelButtonColor: '#6c757d',
+    preConfirm: () => {
+      const newDate = document.getElementById('new_date').value;
+      const newTime = document.getElementById('new_time').value;
+      const reason = document.getElementById('reschedule_reason').value;
+      
+      if (!newDate || !newTime) {
+        Swal.showValidationMessage('Please fill in both date and time');
+        return false;
       }
-    });
+      
+      const selectedDate = new Date(newDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        Swal.showValidationMessage('Cannot select a past date');
+        return false;
+      }
+      
+      return {
+        appointment_id: appointmentId,
+        new_date: newDate,
+        new_time: newTime,
+        reason: reason
+      };
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      Swal.fire({
+        title: 'Rescheduling...',
+        text: 'Please wait',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+      });
+      
+      $.ajax({
+        url: 'counselor_reschedule_function.php',
+        type: 'POST',
+        data: result.value,
+        dataType: 'json',
+        success: function(response) {
+          if (response.success) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Rescheduled!',
+              text: response.message,
+              confirmButtonColor: '#28a745'
+            }).then(() => {
+              $('#appointmentsTable').DataTable().ajax.reload();
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: response.message
+            });
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('AJAX Error:', error);
+          console.error('Response:', xhr.responseText);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.'
+          });
+        }
+      });
+    }
   });
-  </script>
+});
+</script>
 </body>
 </html>

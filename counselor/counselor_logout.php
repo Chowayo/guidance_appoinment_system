@@ -1,5 +1,6 @@
 <?php
-session_start();
+include '../session_config.php';
+include '../db/dbconn.php';
 $_SESSION = array();
 session_destroy();
 
