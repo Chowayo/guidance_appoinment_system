@@ -8,7 +8,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
     $mail = new PHPMailer(true);
     
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -23,7 +22,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
         $mail->isHTML(true);
         $mail->Subject = 'Appointment Confirmation - Evergreen Academy';
         
-        // Format date and time
         $appointmentDate = date("F j, Y", strtotime($appointmentDetails['date']));
         $appointmentTime = date("h:i A", strtotime($appointmentDetails['time']));
         
@@ -107,7 +105,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
                                 <div class='detail-label'>⚠️ Urgency:</div>
                                 <div class='detail-value'>";
         
-        // Add urgency badge
         $urgencyClass = 'urgency-' . strtolower($appointmentDetails['urgency_level']);
         $urgencyIcon = $appointmentDetails['urgency_level'] === 'High' ? '🔴' : 
                       ($appointmentDetails['urgency_level'] === 'Medium' ? '🟡' : '🟢');
@@ -121,7 +118,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
                             </div>
                         </div>";
         
-        // Different info based on status
         if ($isApproved) {
             $mail->Body .= "
                         <div class='info-box'>
@@ -165,7 +161,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
             </html>
         ";
         
-        // Plain text version
         $statusTextPlain = $isApproved ? 'APPROVED' : 'PENDING APPROVAL';
         $mail->AltBody = "Hello {$studentName},\n\n"
                        . "Your appointment has been created - Status: {$statusTextPlain}\n\n"

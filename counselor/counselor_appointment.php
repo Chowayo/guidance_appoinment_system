@@ -120,7 +120,8 @@ $stmt->close();
     }
   
     .navbar {
-      background: linear-gradient(90deg, #005504ff, #003d2bff);
+      background: linear-gradient(90deg, #889700ff, #003d2bff);
+      box-shadow: 0 0 20px yellow;
     }
     .navbar-brand {
       color: #fff !important;
@@ -173,7 +174,6 @@ $stmt->close();
       width: auto;
     }
     
-    /* Tooltip for additional notes */
     .notes-cell {
       max-width: 200px;
       overflow: hidden;
@@ -182,7 +182,6 @@ $stmt->close();
       cursor: help;
     }
     
-    /* Make table scrollable on small screens */
     .table-responsive {
       overflow-x: auto;
     }
@@ -191,7 +190,7 @@ $stmt->close();
 <body>
 
 <nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand fst-italic" href="counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN INTEGRATED HIGHSCHOOL</a>
+  <a class="navbar-brand fst-italic" href="counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN GUIDANCE COUNSELOR PORTAL</a>
   <div class="ms-auto">
     <span class="navbar-text me-3 fw-bold">Welcome, <?= htmlspecialchars($_SESSION['first_name']); ?>!</span>
     <a href="../counselor/counselor_logout.php" class="btn btn-danger">Logout</a>
@@ -240,7 +239,6 @@ $stmt->close();
         </tr>
       </thead>
       <tbody>
-        <!-- Data loaded via AJAX -->
       </tbody>
     </table>
   </div>
@@ -296,12 +294,10 @@ $(document).ready(function(){
     }
   });
 
-  // Reload every 30 seconds
   setInterval(function () {
     table.ajax.reload(null, false);
   }, 30000);
 
-  // View Details Modal
   $(document).on('click', '.view-details', function(e) {
     e.preventDefault();
     
@@ -387,9 +383,8 @@ $(document).ready(function(){
       confirmButtonColor: '#28a745'
     });
   });
-}); // <-- Close the document.ready here
+});
 
-// SweetAlert for single delete
 $('#appointmentsTable').on('click', 'a[href*="action=delete_single"]', function(e) {
   e.preventDefault();
   var link = $(this).attr('href');
@@ -427,9 +422,8 @@ $('.clear-all-link').on('click', function(e) {
       window.location.href = link;
     }
   });
-}); // <-- Close the Clear All handler here
+});
 
-// Reschedule Appointment Modal (SEPARATE HANDLER)
 $(document).on('click', '.reschedule-appointment', function(e) {
   e.preventDefault();
   

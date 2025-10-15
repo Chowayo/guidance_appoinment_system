@@ -10,7 +10,6 @@ if (!isset($_SESSION['counselor_id'])) {
 
 $counselor_id = $_SESSION['counselor_id'];
 
-// Get appointments for this counselor with new fields
 $sql = "SELECT a.appointment_id, a.date, a.time, a.reason, a.status,
                a.purpose, a.urgency_level, a.confirmation_email,
                s.student_id, s.first_name, s.last_name, s.grade_level
@@ -32,7 +31,6 @@ while ($row = $result->fetch_assoc()) {
     $appointmentDate = date("F j, Y", strtotime($row['date']));
     $appointmentTime = date("h:i A", strtotime($row['time']));
     
-    // Status badge
     if ($row['status'] === 'pending') {
         $statusBadge = '<span class="badge bg-warning">Pending</span>';
         $actions = "
@@ -63,7 +61,7 @@ while ($row = $result->fetch_assoc()) {
         $actions = "
             <a href='counselor_delete_function.php?action=delete_single&id={$row['appointment_id']}' class='btn btn-sm btn-danger mb-1'>🗑️ Delete</a>
         ";
-    } else { // rescheduled
+    } else {
         $statusBadge = '<span class="badge bg-info">Rescheduled</span>';
         $actions = "
             <a href='#' class='reschedule-appointment btn btn-sm btn-info mb-1' 
@@ -77,7 +75,6 @@ while ($row = $result->fetch_assoc()) {
         ";
     }
 
-    // Urgency badge with color coding
     $urgencyLevel = $row['urgency_level'] ?? 'Low';
     switch ($urgencyLevel) {
         case 'High':
@@ -92,10 +89,8 @@ while ($row = $result->fetch_assoc()) {
             break;
     }
 
-    // Purpose - handle null/empty values
     $purpose = $row['purpose'] ?? 'Not specified';
     
-    // Additional notes - with tooltip for long text
     $notes = $row['reason'] ?? 'No additional notes';
     $notesShort = strlen($notes) > 50 ? substr($notes, 0, 50) . '...' : $notes;
     $notesDisplay = '<span class="notes-cell" title="' . htmlspecialchars($notes) . '">' . htmlspecialchars($notesShort) . '</span>';

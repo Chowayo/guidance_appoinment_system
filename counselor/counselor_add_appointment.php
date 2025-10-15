@@ -1,6 +1,6 @@
 <?php
-session_start();
-include "../db/dbconn.php";
+include '../session_config.php';
+include '../db/dbconn.php';
 
 if (!isset($_SESSION['counselor_id'])) {
     header("Location: ../counselor/counselor_login.php");
@@ -29,15 +29,15 @@ $stmt->close();
   <meta charset="UTF-8">
   <title>Add Appointment - Counselor</title>
   <link rel="stylesheet" href="../css/bootstrap.min.css">
-  <!-- Select2 CSS for searchable dropdown -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-5-theme/1.3.0/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+  
+  <link href="../css/select2.min.css" rel="stylesheet" />
+  <link href="../css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
   
   <script src="../js/jquery-3.6.0.min.js"></script>
   <script src="../js/sweetalert2@11.js"></script>
   <script src="../js/bootstrap.bundle.min.js"></script>
-  <!-- Select2 JS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  
+  <script src="../js/select2.min.js"></script>
   
   <style>
     body {
@@ -111,7 +111,6 @@ $stmt->close();
       margin: 0 auto 20px;
     }
 
-    /* Select2 custom styling */
     .select2-container--bootstrap-5 .select2-selection--single {
       min-height: 38px;
       border-radius: 5px;
@@ -137,7 +136,6 @@ $stmt->close();
     <input type="hidden" name="counselor_id" value="<?= $counselor_id ?>">
     <input type="hidden" name="action" value="counselor_add_appointment">
 
-    <!-- Select Student - SEARCHABLE -->
     <div class="mb-3">
       <label class="form-label required-field">Select Student</label>
       <select name="student_id" id="student_id" class="form-select" required>
@@ -153,7 +151,6 @@ $stmt->close();
       <small class="text-muted">Type to search by name, ID, or email</small>
     </div>
 
-    <!-- Confirmation Email (auto-filled) -->
     <div class="mb-3">
       <label class="form-label required-field">Student Email</label>
       <input type="email" name="confirmation_email" id="confirmation_email" 
@@ -161,28 +158,26 @@ $stmt->close();
       <small class="text-muted">Email will be auto-filled when you select a student</small>
     </div>
 
-    <!-- Purpose -->
     <div class="mb-3">
       <label class="form-label required-field">Purpose of Appointment</label>
       <select name="purpose" id="purpose" class="form-select" required>
         <option value="">-- Select Purpose --</option>
         <option value="Academic concern">Academic concern</option>
         <option value="Personal problem">Personal problem</option>
-        <option value="Family issue">Family issue</option>
+        <option value="Family issue">Mental Health & Wellness</option>
         <option value="Career guidance">Career guidance</option>
+        <option value="Career guidance">Specialized & Administrative Services</option>
         <option value="Counseling follow-up">Counseling follow-up</option>
         <option value="Others">Others</option>
       </select>
     </div>
 
-    <!-- Others - Specify -->
     <div class="mb-3" id="purpose_other_field">
       <label class="form-label">Please specify</label>
       <input type="text" name="purpose_other" id="purpose_other" 
              class="form-control" placeholder="Enter specific purpose...">
     </div>
 
-    <!-- Urgency Level -->
     <div class="mb-3">
       <label class="form-label required-field">Urgency Level</label>
       <select name="urgency_level" class="form-select" required>
@@ -193,7 +188,6 @@ $stmt->close();
       </select>
     </div>
 
-    <!-- Date -->
     <div class="row">
       <div class="col-md-6 mb-3">
         <label class="form-label required-field">Appointment Date</label>
@@ -202,21 +196,18 @@ $stmt->close();
         <small class="text-muted">Cannot select past dates</small>
       </div>
 
-      <!-- Time -->
       <div class="col-md-6 mb-3">
         <label class="form-label required-field">Appointment Time</label>
         <input type="time" name="appointment_time" class="form-control" required>
       </div>
     </div>
 
-    <!-- Additional Notes -->
     <div class="mb-3">
       <label class="form-label">Additional Notes</label>
       <textarea name="reason" class="form-control" rows="4" 
                 placeholder="Add any additional details (optional)..."></textarea>
     </div>
 
-    <!-- Auto-approve option -->
     <div class="mb-3">
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="auto_approve" 
@@ -227,7 +218,6 @@ $stmt->close();
       </div>
     </div>
 
-    <!-- Buttons -->
     <div class="d-flex gap-2">
       <button type="submit" class="btn btn-submit flex-fill">
         Create Appointment
@@ -241,14 +231,14 @@ $stmt->close();
 
 <script>
 $(document).ready(function() {
-  // Initialize Select2 with search functionality
+
   $('#student_id').select2({
     theme: "bootstrap-5",
     placeholder: "-- Select or Search Student --",
     allowClear: true,
     width: '100%',
     matcher: function(params, data) {
-      // Custom matcher for better search
+
       if ($.trim(params.term) === '') {
         return data;
       }
@@ -264,13 +254,11 @@ $(document).ready(function() {
     }
   });
 
-  // Auto-fill email when student is selected
   $('#student_id').on('change', function() {
     var email = $(this).find(':selected').data('email');
     $('#confirmation_email').val(email || '');
   });
 
-  // Show/hide "Others" field
   $('#purpose').on('change', function() {
     if ($(this).val() === 'Others') {
       $('#purpose_other_field').slideDown();
@@ -282,11 +270,9 @@ $(document).ready(function() {
     }
   });
 
-  // Form submission
   $('#addAppointmentForm').on('submit', function(e) {
     e.preventDefault();
 
-    // Validate
     if ($('#purpose').val() === 'Others' && $('#purpose_other').val().trim() === '') {
       Swal.fire({
         title: 'Validation Error',

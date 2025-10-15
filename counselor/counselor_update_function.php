@@ -13,7 +13,6 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
     $action = $_GET['action'];
     $counselor_id = $_SESSION['counselor_id'];
 
-    // Get appointment details BEFORE updating (for email)
     $detailsQuery = "SELECT a.*, s.first_name, s.last_name, s.email, 
                             c.first_name as counselor_fname, c.last_name as counselor_lname
                      FROM appointments a
@@ -33,7 +32,6 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
         exit;
     }
 
-    // Determine new status based on action
     $new_status = '';
     if ($action == 'approve') {
         $new_status = 'approved';
@@ -46,7 +44,6 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
         exit;
     }
 
-    // Update appointment status
     $stmt = $conn->prepare("
         UPDATE appointments 
         SET status = ? 
@@ -58,7 +55,6 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
     if ($stmt->execute()) {
         $stmt->close();
         
-        // Prepare email details
         $studentName = $appointmentData['first_name'] . ' ' . $appointmentData['last_name'];
         $studentEmail = $appointmentData['confirmation_email'] ?? $appointmentData['email'];
         $counselorName = $appointmentData['counselor_fname'] . ' ' . $appointmentData['counselor_lname'];
@@ -70,7 +66,6 @@ if (isset($_GET['id']) && isset($_GET['action'])) {
             'counselor_name' => $counselorName
         ];
 
-        // Send email notification
         if (!empty($studentEmail)) {
             $emailResult = sendAppointmentStatusEmail($studentEmail, $studentName, $appointmentDetails, $new_status);
             

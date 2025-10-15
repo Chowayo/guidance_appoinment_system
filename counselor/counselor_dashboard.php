@@ -130,12 +130,13 @@ $result = $stmt->get_result();
 <nav class="navbar navbar-expand-lg px-4">
   <a class="navbar-brand fst-italic" href="counselor_dashboard.php">
     <img src="../pics/logo.jpg" alt="Logo" class="logo-navbar me-2">
-    EVERGREEN INTEGRATED HIGHSCHOOL
+    EVERGREEN GUIDANCE COUNSELOR PORTAL
   </a>
   <div class="ms-auto navbar-actions">
     <span class="navbar-text fw-bold">Welcome, <?= htmlspecialchars($_SESSION['first_name']); ?>!</span>
     <a href="counselor_change_password.php" class="btn btn-warning btn-sm">Change Password</a>
-    <a href="../counselor/counselor_logout.php" class="btn btn-danger btn-sm">Logout</a>
+    <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
+
   </div>
 </nav>
 
@@ -177,4 +178,26 @@ $result = $stmt->get_result();
     </div>
   </div>
 </body>
+
+<script>
+document.getElementById('logoutBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "You will be logged out of your session.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#dc3545',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Yes, logout',
+    cancelButtonText: 'Cancel'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = "../counselor/counselor_logout.php";
+    }
+  });
+});
+</script>
+
 </html>

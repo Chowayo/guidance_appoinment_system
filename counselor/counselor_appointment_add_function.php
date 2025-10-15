@@ -25,7 +25,6 @@ try {
     $confirmation_email = trim($_POST['confirmation_email'] ?? '');
     $auto_approve = isset($_POST['auto_approve']) ? 1 : 0;
 
-    // Validation
     if ($student_id <= 0) {
         throw new Exception('Please select a student.');
     }
@@ -34,7 +33,6 @@ try {
         throw new Exception('Please select a purpose for the appointment.');
     }
 
-    // Handle "Others" purpose
     if ($purpose === 'Others') {
         if (empty($purpose_other)) {
             throw new Exception('Please specify the purpose when selecting "Others".');
@@ -52,7 +50,6 @@ try {
         throw new Exception('Please select an appointment date.');
     }
 
-    // Check if date is not in the past
     if ($appointment_date < date('Y-m-d')) {
         throw new Exception('Cannot book appointments for past dates.');
     }
@@ -65,10 +62,8 @@ try {
         throw new Exception('Please provide a valid email address.');
     }
 
-    // Set status based on auto_approve
     $status = $auto_approve ? 'approved' : 'pending';
 
-    // Check if student already has a pending/approved appointment
     $checkQuery = "SELECT 1 FROM appointments 
                    WHERE student_id = ? AND status IN ('pending', 'approved')";
     $checkStmt = $conn->prepare($checkQuery);
@@ -81,7 +76,6 @@ try {
         throw new Exception('This student already has a pending or approved appointment.');
     }
 
-    // Insert appointment
     $insertQuery = "INSERT INTO appointments 
                     (student_id, counselor_id, purpose, urgency_level, confirmation_email, 
                      date, time, reason, status) 
@@ -103,7 +97,6 @@ try {
         $appointment_id = $insertStmt->insert_id;
         $insertStmt->close();
 
-        // Get student and counselor information
         $infoQuery = "SELECT 
                         s.first_name as student_fname, 
                         s.last_name as student_lname,
@@ -127,10 +120,9 @@ try {
     'purpose' => $final_purpose,
     'urgency_level' => $urgency_level,
     'counselor_name' => $counselorName,
-    'status' => $status  // ← Make sure this line exists!
+    'status' => $status
 ];
 
-        // Send confirmation email
         $emailResult = sendAppointmentConfirmationEmail($confirmation_email, $studentName, $appointmentDetails);
 
         $conn->close();

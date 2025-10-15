@@ -8,7 +8,6 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
     $mail = new PHPMailer(true);
     
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -23,11 +22,9 @@ function sendAppointmentConfirmationEmail($email, $studentName, $appointmentDeta
         $mail->isHTML(true);
         $mail->Subject = 'Appointment Confirmation - Evergreen Academy';
         
-        // Format date and time
         $appointmentDate = date("F j, Y", strtotime($appointmentDetails['date']));
         $appointmentTime = date("h:i A", strtotime($appointmentDetails['time']));
         
-        // Urgency badge color
         $urgencyColors = [
             'Low' => '#28a745',
             'Medium' => '#ffc107',

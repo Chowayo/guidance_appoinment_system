@@ -124,7 +124,7 @@ $result = $stmt->get_result();
 <body>
 
 <nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand fst-italic" href="../counselor/counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN INTEGRATED HIGHSCHOOL</a>
+  <a class="navbar-brand fst-italic" href="../counselor/counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN GUIDANCE COUNSELOR PORTAL</a>
   <div class="ms-auto">
     <span class="navbar-text me-3 fw-bold">Welcome, <?= htmlspecialchars($_SESSION['first_name']); ?>!</span>
     <a href="../counselor/counselor_logout.php" class="btn btn-danger">Logout</a>
@@ -136,8 +136,8 @@ $result = $stmt->get_result();
     <h3 class="mb-4 text-center text-success fw-bold">Students - <?= htmlspecialchars($grade_level); ?></h3>
 
     <?php if ($result->num_rows > 0): ?>
-      <div class="table-responsive">
-        <table class="table table-striped table-hover text-center align-middle" id="studentTable">
+  <div class="table-responsive">
+    <table class="table table-striped table-hover text-center align-middle" id="studentTable">
           <thead>
             <tr>
               <th>Student ID</th>
@@ -150,11 +150,11 @@ $result = $stmt->get_result();
           </thead>
           <tbody></tbody>
         </table>
-      </div>
-    <?php else: ?>
-      <div class="alert alert-warning text-center">No records found for your grade level.</div>
-    <?php endif; ?>
-    <?php $conn->close(); ?>
+  </div>
+<?php else: ?>
+  <div class="alert alert-warning text-center">No records found for your grade level.</div>
+<?php endif; ?>
+<?php $conn->close(); ?>
   </div>
 </div>
 

@@ -5,16 +5,12 @@ include '../session_config.php';
 include '../db/dbconn.php';
 include '../config.php';
 
-// Include PHPMailer
 require_once __DIR__ . '/../phpmailer/vendor/autoload.php';
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Email sending function
 function sendPasswordResetEmail($email, $studentName, $resetToken) {
     global $base_url;
-
     $mail = new PHPMailer(true);
     
     try {
@@ -22,7 +18,7 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'chowxinnlu@gmail.com';
-        $mail->Password   = 'dkrnuziewiqvdewe'; 
+        $mail->Password   = 'dkrnuziewiqvdewe';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
@@ -32,8 +28,8 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset Request - Evergreen Academy';
 
-        $resetLink = rtrim($base_url, '/') . "/student/reset_password.php?token=" . urlencode($resetToken);
-
+        $resetLink = $base_url . "/student/reset_password.php?token=" . urlencode($resetToken);
+        
         $mail->Body = "
             <html>
             <head>
@@ -63,7 +59,7 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
             <body>
                 <div class='container'>
                     <div class='header'>
-                        <h1>🔒 Password Reset Request</h1>
+                        <h1>🔑 Password Reset Request</h1>
                     </div>
                     <div class='content'>
                         <p class='greeting'>Hello, {$studentName}!</p>
@@ -117,18 +113,15 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
     }
 }
 
-// Process form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email']) && !empty($_POST['email'])) {
     $email = trim($_POST['email']);
     
-    // Validate email format
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['error'] = 'Invalid email format';
-        header('Location: student_log_reg.php');
+        $_SESSION['error'] = 'Invalid email format. Please enter a valid email address.';
+        header("Location: " . BASE_URL . "/student/forgot_password.php");
         exit;
     }
     
-    // Check if email exists
     $query = "SELECT student_id, first_name, last_name FROM student WHERE email = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $email);
@@ -142,34 +135,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
         $resetToken = bin2hex(random_bytes(32));
         $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
         
-        $updateQuery = "UPDATE student SET reset_token = ?, reset_token_expiry = ? WHERE email = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("sss", $resetToken, $expiry, $email);
+        $update = $conn->prepare("UPDATE student SET reset_token = ?, reset_token_expiry = ? WHERE email = ?");
+        $update->bind_param("sss", $resetToken, $expiry, $email);
         
-        if ($updateStmt->execute()) {
+        if ($update->execute()) {
             $emailResult = sendPasswordResetEmail($email, $studentName, $resetToken);
             
             if ($emailResult['success']) {
-                $_SESSION['success'] = 'Password reset link has been sent to your email. Please check your inbox.';
+                $_SESSION['success'] = '✓ Password reset link has been sent to your email address. Please check your inbox and spam folder.';
             } else {
-                $_SESSION['error'] = 'Failed to send email. Please try again later.';
+                $_SESSION['error'] = 'Failed to send reset email. Please try again later or contact support.';
             }
         } else {
-            $_SESSION['error'] = 'Failed to generate reset token. Please try again.';
+            $_SESSION['error'] = 'An error occurred while processing your request. Please try again.';
         }
         
-        $updateStmt->close();
+        $update->close();
     } else {
-        $_SESSION['success'] = 'If that email exists in our system, a password reset link has been sent.';
+        $_SESSION['error'] = '✗ Email address not found in our system. Please check your email or register a new account.';
     }
     
     $stmt->close();
     $conn->close();
     
-    header('Location: student_log_reg.php');
+    header("Location: " . BASE_URL . "/student/forgot_password.php");
     exit;
 }
 
-header('Location: student_log_reg.php');
+header("Location: " . BASE_URL . "/student/forgot_password.php");
 exit;
 ?>

@@ -14,58 +14,52 @@ $counselor_id = $_SESSION['counselor_id'];
 $alert_message = '';
 
 // Auto-delete past availability
-$conn->query("DELETE FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date < CURDATE()");
-
-// Generate schedule for 1 day
-if (isset($_POST['generate_one_day'])) {
-    $start_date = date('Y-m-d', strtotime('+1 day'));
-    $day_of_week = date('N', strtotime($start_date));
-    
-    if ($day_of_week < 6) {
-        $check = $conn->query("SELECT id FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date='$start_date' AND start_time='08:00:00' AND end_time='17:00:00'");
-        
-        if ($check->num_rows == 0) {
-            if ($conn->query("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES ($counselor_id, '$start_date', '08:00:00', '17:00:00', 1)")) {
-                $alert_message = "Swal.fire({icon:'success',title:'Tomorrow Added!',text:'Added 1 time slot.',confirmButtonText:'OK'}).then(()=>{window.location='counselor_availability.php';});";
-            } else {
-                $alert_message = "Swal.fire({icon:'error',title:'Error',text:'Database error: " . addslashes($conn->error) . "'});";
-            }
-        } else {
-            $alert_message = "Swal.fire({icon:'info',title:'Already Exists',text:'Tomorrow already has a schedule!'});";
-        }
-    } else {
-        $alert_message = "Swal.fire({icon:'warning',title:'Weekend',text:'Tomorrow is a weekend. No schedule added.'});";
-    }
-}
+$stmt = $conn->prepare("DELETE FROM counselor_availability WHERE counselor_id = ? AND available_date < CURDATE()");
+$stmt->bind_param("i", $counselor_id);
+$stmt->execute();
+$stmt->close();
 
 // Generate schedule for 7 days
 if (isset($_POST['generate_week'])) {
-    // Find the last scheduled date
-    $last_date_result = $conn->query("SELECT MAX(available_date) as last_date FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date >= CURDATE()");
+    $stmt = $conn->prepare("SELECT MAX(available_date) as last_date FROM counselor_availability WHERE counselor_id = ? AND available_date >= CURDATE()");
+    $stmt->bind_param("i", $counselor_id);
+    $stmt->execute();
+    $last_date_result = $stmt->get_result();
     $last_date_row = $last_date_result->fetch_assoc();
+    $stmt->close();
     
     if ($last_date_row['last_date']) {
-        // Start from the day after the last scheduled date
         $start_from = strtotime($last_date_row['last_date'] . ' +1 day');
     } else {
-        // No schedule exists, start from tomorrow
         $start_from = strtotime('+1 day');
     }
     
     $added = 0;
     $days_checked = 0;
     
-    // Keep adding until we get 7 weekdays
-    while ($added < 7 && $days_checked < 20) { // Safety limit of 20 days to check
+    while ($added < 7 && $days_checked < 20) {
         $date = date('Y-m-d', $start_from);
         $day_of_week = date('N', $start_from);
         
-        if ($day_of_week < 6) { // Weekday
-            $check = $conn->query("SELECT id FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date='$date' AND start_time='08:00:00' AND end_time='17:00:00'");
-            if ($check->num_rows == 0) {
-                if ($conn->query("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES ($counselor_id, '$date', '08:00:00', '17:00:00', 1)")) {
+        if ($day_of_week < 6) {
+            $stmt = $conn->prepare("SELECT id FROM counselor_availability WHERE counselor_id = ? AND available_date = ? AND start_time = '08:00:00' AND end_time = '17:00:00'");
+            $stmt->bind_param("is", $counselor_id, $date);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+            $stmt->close();
+            
+            if ($check_result->num_rows == 0) {
+                $start_time = '08:00:00';
+                $end_time = '17:00:00';
+                $is_available = 1;
+                
+                $stmt = $conn->prepare("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssi", $counselor_id, $date, $start_time, $end_time, $is_available);
+                
+                if ($stmt->execute()) {
                     $added++;
                 }
+                $stmt->close();
             }
         }
         
@@ -78,33 +72,45 @@ if (isset($_POST['generate_week'])) {
 
 // Generate 30 days
 if (isset($_POST['generate_schedule'])) {
-    // Find the last scheduled date
-    $last_date_result = $conn->query("SELECT MAX(available_date) as last_date FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date >= CURDATE()");
+    $stmt = $conn->prepare("SELECT MAX(available_date) as last_date FROM counselor_availability WHERE counselor_id = ? AND available_date >= CURDATE()");
+    $stmt->bind_param("i", $counselor_id);
+    $stmt->execute();
+    $last_date_result = $stmt->get_result();
     $last_date_row = $last_date_result->fetch_assoc();
+    $stmt->close();
     
     if ($last_date_row['last_date']) {
-        // Start from the day after the last scheduled date
         $start_from = strtotime($last_date_row['last_date'] . ' +1 day');
     } else {
-        // No schedule exists, start from tomorrow
         $start_from = strtotime('+1 day');
     }
     
     $added = 0;
     $days_checked = 0;
     
-    // Keep adding until we get 30 weekdays
-    while ($added < 30 && $days_checked < 50) { // Safety limit of 50 days to check
+    while ($added < 30 && $days_checked < 50) {
         $date = date('Y-m-d', $start_from);
         $day_of_week = date('N', $start_from);
         
-        if ($day_of_week < 6) { // Weekday
-            // Full day slot: 8 AM - 5 PM
-            $check = $conn->query("SELECT id FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date='$date' AND start_time='08:00:00' AND end_time='17:00:00'");
-            if ($check->num_rows == 0) {
-                if ($conn->query("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES ($counselor_id, '$date', '08:00:00', '17:00:00', 1)")) {
+        if ($day_of_week < 6) {
+            $stmt = $conn->prepare("SELECT id FROM counselor_availability WHERE counselor_id = ? AND available_date = ? AND start_time = '08:00:00' AND end_time = '17:00:00'");
+            $stmt->bind_param("is", $counselor_id, $date);
+            $stmt->execute();
+            $check_result = $stmt->get_result();
+            $stmt->close();
+            
+            if ($check_result->num_rows == 0) {
+                $start_time = '08:00:00';
+                $end_time = '17:00:00';
+                $is_available = 1;
+                
+                $stmt = $conn->prepare("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssi", $counselor_id, $date, $start_time, $end_time, $is_available);
+                
+                if ($stmt->execute()) {
                     $added++;
                 }
+                $stmt->close();
             }
         }
         
@@ -115,56 +121,57 @@ if (isset($_POST['generate_schedule'])) {
     $alert_message = "Swal.fire({icon:'success',title:'30 Days Added!',text:'Added $added weekday slot(s) to your schedule.',confirmButtonText:'OK'}).then(()=>{window.location='counselor_availability.php';});";
 }
 
-// Add custom slot
 if (isset($_POST['add_custom_slot'])) {
     $custom_date = $_POST['custom_date'];
-    $custom_start = $_POST['custom_start'];
-    $custom_end = $_POST['custom_end'];
+    $custom_start = $_POST['custom_start'] . ':00';
+    $custom_end = $_POST['custom_end'] . ':00';
     
     $input_datetime = strtotime($custom_date . ' ' . $custom_start);
     $current_datetime = time();
     
-    $start_hour = (int)date('H', strtotime($custom_start));
-    $end_hour = (int)date('H', strtotime($custom_end));
-    $end_minute = (int)date('i', strtotime($custom_end));
-    
     if ($input_datetime <= $current_datetime) {
         $alert_message = "Swal.fire({icon:'error',title:'Invalid Date/Time',text:'You can only add future dates and times!'});";
-    } elseif ($start_hour < 8 || $start_hour >= 17 || $end_hour < 8 || $end_hour > 17 || ($end_hour == 17 && $end_minute > 0)) {
-        $alert_message = "Swal.fire({icon:'error',title:'Outside Office Hours',text:'Time must be within 8:00 AM - 5:00 PM!'});";
     } elseif (strtotime($custom_start) >= strtotime($custom_end)) {
         $alert_message = "Swal.fire({icon:'error',title:'Invalid Time Range',text:'End time must be after start time!'});";
     } else {
-        // Check if exact slot already exists
-        $check_exact = $conn->query("SELECT id FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date='$custom_date' AND start_time='$custom_start' AND end_time='$custom_end'");
+        $stmt = $conn->prepare("SELECT id FROM counselor_availability WHERE counselor_id = ? AND available_date = ? AND start_time = ? AND end_time = ?");
+        $stmt->bind_param("isss", $counselor_id, $custom_date, $custom_start, $custom_end);
+        $stmt->execute();
+        $check_exact_result = $stmt->get_result();
+        $stmt->close();
         
-        if ($check_exact->num_rows > 0) {
+        if ($check_exact_result->num_rows > 0) {
             $alert_message = "Swal.fire({icon:'warning',title:'Already Exists',text:'This exact time slot already exists in your schedule!',confirmButtonText:'OK'});";
         } else {
-            // Check for overlapping slots on the same date
-            $check_overlap = $conn->query("SELECT id, start_time, end_time FROM counselor_availability 
-                WHERE counselor_id=$counselor_id 
-                AND available_date='$custom_date' 
+            $stmt = $conn->prepare("SELECT id, start_time, end_time FROM counselor_availability 
+                WHERE counselor_id = ? 
+                AND available_date = ? 
                 AND (
-                    (start_time <= '$custom_start' AND end_time > '$custom_start') OR
-                    (start_time < '$custom_end' AND end_time >= '$custom_end') OR
-                    (start_time >= '$custom_start' AND end_time <= '$custom_end')
+                    (start_time <= ? AND end_time > ?) OR
+                    (start_time < ? AND end_time >= ?) OR
+                    (start_time >= ? AND end_time <= ?)
                 )");
+            $stmt->bind_param("isssssss", $counselor_id, $custom_date, $custom_start, $custom_start, $custom_end, $custom_end, $custom_start, $custom_end);
+            $stmt->execute();
+            $check_overlap_result = $stmt->get_result();
+            $stmt->close();
             
-            if ($check_overlap->num_rows > 0) {
-                $overlap_slot = $check_overlap->fetch_assoc();
+            if ($check_overlap_result->num_rows > 0) {
+                $overlap_slot = $check_overlap_result->fetch_assoc();
                 $overlap_start = date("g:i A", strtotime($overlap_slot['start_time']));
                 $overlap_end = date("g:i A", strtotime($overlap_slot['end_time']));
                 $alert_message = "Swal.fire({icon:'warning',title:'Time Conflict',text:'This overlaps with an existing slot: $overlap_start - $overlap_end',confirmButtonText:'OK'});";
             } else {
-                $stmt = $conn->prepare("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, 1)");
-                $stmt->bind_param("isss", $counselor_id, $custom_date, $custom_start, $custom_end);
+                $is_available = 1;
+                $stmt = $conn->prepare("INSERT INTO counselor_availability (counselor_id, available_date, start_time, end_time, is_available) VALUES (?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssi", $counselor_id, $custom_date, $custom_start, $custom_end, $is_available);
                 
                 if ($stmt->execute()) {
                     $alert_message = "Swal.fire({icon:'success',title:'Custom Slot Added!',text:'Your slot has been added.',confirmButtonText:'OK'}).then(()=>{window.location='counselor_availability.php';});";
                 } else {
                     $alert_message = "Swal.fire({icon:'error',title:'Error',text:'Could not add slot.'});";
                 }
+                $stmt->close();
             }
         }
     }
@@ -172,31 +179,49 @@ if (isset($_POST['add_custom_slot'])) {
 
 // Clear all
 if (isset($_GET['clear_all']) && $_GET['clear_all'] == 'confirm') {
-    if ($conn->query("DELETE FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date >= CURDATE()")) {
+    $stmt = $conn->prepare("DELETE FROM counselor_availability WHERE counselor_id = ? AND available_date >= CURDATE()");
+    $stmt->bind_param("i", $counselor_id);
+    
+    if ($stmt->execute()) {
         $alert_message = "Swal.fire({icon:'success',title:'All Cleared!',text:'All future availability removed.',confirmButtonText:'OK'}).then(()=>{window.location='counselor_availability.php';});";
     } else {
         $alert_message = "Swal.fire({icon:'error',title:'Error',text:'Could not clear schedule.'});";
     }
+    $stmt->close();
 }
 
-// Toggle
 if (isset($_GET['toggle_id'])) {
     $toggle_id = intval($_GET['toggle_id']);
-    $conn->query("UPDATE counselor_availability SET is_available = NOT is_available WHERE id=$toggle_id AND counselor_id=$counselor_id");
+    $stmt = $conn->prepare("UPDATE counselor_availability SET is_available = NOT is_available WHERE id = ? AND counselor_id = ?");
+    $stmt->bind_param("ii", $toggle_id, $counselor_id);
+    $stmt->execute();
+    $stmt->close();
     $alert_message = "Swal.fire({icon:'success',title:'Updated!',text:'Status changed.',timer:1500,showConfirmButton:false}).then(()=>{window.location='counselor_availability.php';});";
 }
 
-// Delete
 if (isset($_GET['delete_id'])) {
     $delete_id = intval($_GET['delete_id']);
-    $conn->query("DELETE FROM counselor_availability WHERE id=$delete_id AND counselor_id=$counselor_id");
+    $stmt = $conn->prepare("DELETE FROM counselor_availability WHERE id = ? AND counselor_id = ?");
+    $stmt->bind_param("ii", $delete_id, $counselor_id);
+    $stmt->execute();
+    $stmt->close();
     $alert_message = "Swal.fire({icon:'success',title:'Deleted!',text:'Slot removed.',confirmButtonText:'OK'}).then(()=>{window.location='counselor_availability.php';});";
 }
 
-// Fetch data
-$result = $conn->query("SELECT * FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date >= CURDATE() ORDER BY available_date, start_time");
-$count = $conn->query("SELECT COUNT(*) as total FROM counselor_availability WHERE counselor_id=$counselor_id AND available_date >= CURDATE()")->fetch_assoc()['total'];
+$stmt = $conn->prepare("SELECT * FROM counselor_availability WHERE counselor_id = ? AND available_date >= CURDATE() ORDER BY available_date, start_time");
+$stmt->bind_param("i", $counselor_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$stmt->close();
+
+$stmt = $conn->prepare("SELECT COUNT(*) as total FROM counselor_availability WHERE counselor_id = ? AND available_date >= CURDATE()");
+$stmt->bind_param("i", $counselor_id);
+$stmt->execute();
+$count_result = $stmt->get_result();
+$count = $count_result->fetch_assoc()['total'];
+$stmt->close();
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -367,7 +392,7 @@ $count = $conn->query("SELECT COUNT(*) as total FROM counselor_availability WHER
 <body>
 
 <nav class="navbar navbar-expand-lg px-4">
-  <a class="navbar-brand fst-italic" href="counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN INTEGRATED HIGHSCHOOL</a>
+  <a class="navbar-brand fst-italic" href="counselor_dashboard.php"><img src="logo.jpg" alt="Logo" class="logo-navbar me-2">EVERGREEN GUIDANCE COUNSELOR PORTAL</a>
   <div class="ms-auto">
     <span class="navbar-text me-3 fw-bold">Welcome, <?= htmlspecialchars($_SESSION['first_name']); ?>!</span>
     <a href="../counselor/counselor_logout.php" class="btn btn-danger">Logout</a>
@@ -378,9 +403,8 @@ $count = $conn->query("SELECT COUNT(*) as total FROM counselor_availability WHER
   <h2>Manage Your Availability</h2>
 
   <div class="info-box">
-    <h5><i class="bi bi-info-circle"></i> How It Works:</h5>
     <p class="mb-1"><strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM</p>
-    <p class="mb-0"><strong>Instructions:</strong> Use quick generate buttons or add custom time slots. Mark any dates/times you are NOT available.</p>
+    <p class="mb-0"><strong>Instructions:</strong> Use quick action buttons or add custom time slots. Mark any dates/times you are not available.</p>
   </div>
 
   <!-- Quick Action Buttons -->
@@ -407,7 +431,7 @@ $count = $conn->query("SELECT COUNT(*) as total FROM counselor_availability WHER
 
   <!-- Add Custom Time Slot -->
   <div class="card p-4 mb-4">
-    <h4 class="mb-3">Add Custom Time Slot (Emergency/Special)</h4>
+    <h4 class="mb-3">Add Custom Time Slot</h4>
     <form method="post" id="customSlotForm">
       <div class="row g-3">
         <div class="col-md-4">
@@ -416,11 +440,11 @@ $count = $conn->query("SELECT COUNT(*) as total FROM counselor_availability WHER
         </div>
         <div class="col-md-3">
           <label class="form-label">Start Time</label>
-          <input type="time" name="custom_start" id="custom_start" class="form-control" min="08:00" max="17:00" required>
+          <input type="time" name="custom_start" id="custom_start" class="form-control"required>
         </div>
         <div class="col-md-3">
           <label class="form-label">End Time</label>
-          <input type="time" name="custom_end" id="custom_end" class="form-control" min="08:00" max="17:00" required>
+          <input type="time" name="custom_end" id="custom_end" class="form-control"required>
         </div>
         <div class="col-md-2 d-flex align-items-end">
           <button type="submit" name="add_custom_slot" class="btn btn-warning w-100">
@@ -503,13 +527,11 @@ $(document).ready(function(){
     <?= $alert_message ?>
   <?php endif; ?>
   
-  // Set minimum date to tomorrow for custom slot
   const today = new Date();
   today.setDate(today.getDate() + 1);
   const tomorrow = today.toISOString().split('T')[0];
   $('#custom_date').attr('min', tomorrow);
 
-  // Add Week Button
   $('#addWeekBtn').on('click', function(){
     Swal.fire({
       title: 'Add Next 7 Days?',
@@ -526,7 +548,6 @@ $(document).ready(function(){
     });
   });
 
-  // Add Month Button
   $('#addMonthBtn').on('click', function(){
     Swal.fire({
       title: 'Add Next 30 Days?',
@@ -543,7 +564,6 @@ $(document).ready(function(){
     });
   });
 
-  // Validate custom slot form
   $('#customSlotForm').on('submit', function(e){
     const selectedDate = $('#custom_date').val();
     const startTime = $('#custom_start').val();
@@ -560,7 +580,7 @@ $(document).ready(function(){
       return false;
     }
 
-    const selectedDateTime = new Date(selectedDate + ' ' + startTime);
+    const selectedDateTime = new Date(selectedDate + 'T' + startTime);
     const now = new Date();
 
     if (selectedDateTime <= now) {
@@ -577,21 +597,10 @@ $(document).ready(function(){
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
 
-    if (startHour < 8 || startHour >= 17 || endHour < 8 || endHour > 17 || (endHour === 17 && endMin > 0)) {
-      e.preventDefault();
-      Swal.fire({
-        icon: 'error',
-        title: 'Outside Office Hours',
-        text: 'Time must be within office hours (8:00 AM - 5:00 PM)!',
-        confirmButtonText: 'OK'
-      });
-      return false;
-    }
+    const startTotalMinutes = startHour * 60 + startMin;
+    const endTotalMinutes = endHour * 60 + endMin;
 
-    const start = new Date('1970-01-01 ' + startTime);
-    const end = new Date('1970-01-01 ' + endTime);
-
-    if (end <= start) {
+    if (endTotalMinutes <= startTotalMinutes) {
       e.preventDefault();
       Swal.fire({
         icon: 'error',
@@ -601,9 +610,10 @@ $(document).ready(function(){
       });
       return false;
     }
+
+    return true;
   });
 
-  // Confirm Clear All
   $('#clearAllBtn').on('click', function(e){
     e.preventDefault();
     Swal.fire({
@@ -632,7 +642,6 @@ $(document).ready(function(){
   });
   <?php endif; ?>
 
-  // SweetAlert for Toggle
   $(document).on('click', '.toggle-btn', function(e){
     e.preventDefault();
     var link = $(this).attr('href');
@@ -652,7 +661,6 @@ $(document).ready(function(){
     });
   });
 
-  // SweetAlert for Delete
   $(document).on('click', '.delete-btn', function(e){
     e.preventDefault();
     var link = $(this).attr('href');

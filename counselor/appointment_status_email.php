@@ -8,7 +8,6 @@ function sendAppointmentStatusEmail($email, $studentName, $appointmentDetails, $
     $mail = new PHPMailer(true);
     
     try {
-        // Server settings
         $mail->isSMTP();
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
@@ -22,11 +21,9 @@ function sendAppointmentStatusEmail($email, $studentName, $appointmentDetails, $
         
         $mail->isHTML(true);
         
-        // Format date and time
         $appointmentDate = date("F j, Y", strtotime($appointmentDetails['date']));
         $appointmentTime = date("h:i A", strtotime($appointmentDetails['time']));
         
-        // Different content based on status
         if ($status === 'approved') {
             $mail->Subject = 'Appointment Approved - Evergreen Academy';
             $headerColor = '#28a745';
@@ -47,7 +44,7 @@ function sendAppointmentStatusEmail($email, $studentName, $appointmentDetails, $
             $statusTextColor = '#721c24';
             $statusMessage = '❌ DECLINED';
             
-        } else { // rescheduled
+        } else {
             $mail->Subject = 'Appointment Rescheduled - Evergreen Academy';
             $headerColor = '#17a2b8';
             $headerIcon = '🔄';
@@ -112,7 +109,6 @@ function sendAppointmentStatusEmail($email, $studentName, $appointmentDetails, $
                             </div>
                         </div>";
         
-        // Additional messages based on status
         if ($status === 'approved') {
             $mail->Body .= "
                         <div class='info-box'>
@@ -158,7 +154,6 @@ function sendAppointmentStatusEmail($email, $studentName, $appointmentDetails, $
             </html>
         ";
         
-        // Plain text version
         $statusText = $status === 'approved' ? 'APPROVED' : ($status === 'declined' ? 'DECLINED' : 'RESCHEDULED');
         $mail->AltBody = "Hello {$studentName},\n\n"
                        . "Your appointment has been {$statusText}.\n\n"

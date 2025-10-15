@@ -17,7 +17,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $new_password = trim($_POST['new_password']);
     $confirm_password = trim($_POST['confirm_password']);
     
-    // Validate inputs
     $errors = [];
     
     if (empty($current_password)) {
@@ -45,7 +44,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     
     if (empty($errors)) {
-        // Get current password from database
         $stmt = $conn->prepare("SELECT password FROM student WHERE student_id = ?");
         $stmt->bind_param("i", $student_id);
         $stmt->execute();
@@ -53,12 +51,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row = $result->fetch_assoc();
         $stmt->close();
         
-        // Verify current password
         if ($row && password_verify($current_password, $row['password'])) {
-            // Hash new password
             $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
             
-            // Update password in database
             $updateStmt = $conn->prepare("UPDATE student SET password = ? WHERE student_id = ?");
             $updateStmt->bind_param("si", $hashed_password, $student_id);
             
@@ -90,8 +85,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Change Password - Student</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <script src="../js/sweetalert2@11.js"></script>
   <style>
     body {
       background: linear-gradient(135deg, #e0eb7dff, #81ffa0ff);
@@ -256,7 +251,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
   <?php if (!$success): ?>
   <form id="changePasswordForm" method="POST" action="">
-    <!-- Current Password -->
     <div class="mb-3">
       <label for="current_password" class="form-label">Current Password</label>
       <input type="password" name="current_password" id="current_password" 
@@ -264,7 +258,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <small class="text-muted">Required to verify your identity</small>
     </div>
 
-    <!-- New Password -->
     <div class="mb-3">
       <label for="new_password" class="form-label">New Password</label>
       <input type="password" name="new_password" id="new_password" 
@@ -278,7 +271,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </div>
     </div>
 
-    <!-- Confirm Password -->
     <div class="mb-3">
       <label for="confirm_password" class="form-label">Confirm Password</label>
       <input type="password" name="confirm_password" id="confirm_password" 
@@ -286,14 +278,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <div class="password-strength" id="passwordMatch"></div>
     </div>
 
-    <!-- Change Button -->
     <div class="button-group">
       <button type="submit" class="btn-change">Update Password</button>
       <a href="landing_page.php" class="btn-back">Back to Dashboard</a>
     </div>
   </form>
   <?php else: ?>
-    <!-- Success Message -->
     <div style="text-align: center; padding: 40px 0;">
       <h3 style="color: #28a745; margin-bottom: 20px;">Password Changed Successfully!</h3>
       <p style="color: #666; margin-bottom: 30px;">Your password has been updated. You will be redirected shortly...</p>
@@ -315,12 +305,10 @@ document.getElementById('new_password').addEventListener('keyup', function() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasNumber = /[0-9]/.test(password);
   
-  // Update requirements
   updateRequirement('req-length', hasLength, 'At least 8 characters');
   updateRequirement('req-uppercase', hasUppercase, 'One uppercase letter');
   updateRequirement('req-number', hasNumber, 'One number');
   
-  // Show strength indicator
   const strengthDiv = document.getElementById('passwordStrength');
   if (password.length === 0) {
     strengthDiv.innerHTML = '';

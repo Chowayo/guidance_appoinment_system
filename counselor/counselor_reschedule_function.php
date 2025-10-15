@@ -19,7 +19,6 @@ try {
     $new_time = trim($_POST['new_time'] ?? '');
     $reason = trim($_POST['reason'] ?? '');
     
-    // Validation
     if ($appointment_id <= 0) {
         throw new Exception('Invalid appointment ID.');
     }
@@ -28,12 +27,10 @@ try {
         throw new Exception('Please provide both new date and time.');
     }
     
-    // Check if date is not in the past
     if ($new_date < date('Y-m-d')) {
         throw new Exception('Cannot reschedule to a past date.');
     }
     
-    // Verify appointment belongs to this counselor
     $checkQuery = "SELECT a.*, s.first_name, s.last_name, s.email, 
                    c.first_name as counselor_fname, c.last_name as counselor_lname
                    FROM appointments a
@@ -57,7 +54,6 @@ try {
     $appointment = $result->fetch_assoc();
     $checkStmt->close();
     
-    // Update appointment
     $updateQuery = "UPDATE appointments 
                     SET date = ?, time = ?, status = 'rescheduled' 
                     WHERE appointment_id = ?";
@@ -75,7 +71,6 @@ try {
     
     $updateStmt->close();
     
-    // Prepare email notification
     $studentName = $appointment['first_name'] . ' ' . $appointment['last_name'];
     $counselorName = $appointment['counselor_fname'] . ' ' . $appointment['counselor_lname'];
     $studentEmail = $appointment['email'];
@@ -89,7 +84,6 @@ try {
         'counselor_name' => $counselorName
     ];
     
-    // Send email notification
     $emailResult = sendAppointmentStatusEmail($studentEmail, $studentName, $appointmentDetails, 'rescheduled');
     
     $response['success'] = true;

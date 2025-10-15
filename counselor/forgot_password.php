@@ -1,6 +1,5 @@
 <?php
 include '../session_config.php';
-require_once __DIR__ . '/../config.php';
 
 $error = isset($_SESSION['error']) ? $_SESSION['error'] : '';
 $success = isset($_SESSION['success']) ? $_SESSION['success'] : '';
@@ -14,7 +13,7 @@ unset($_SESSION['success']);
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Forgot Password - Student Portal</title>
+  <title>Forgot Password - Counselor Portal</title>
   <link href="../css/bootstrap.min.css" rel="stylesheet">
   <script src="../js/jquery-3.6.0.min.js"></script>
   
@@ -68,6 +67,17 @@ unset($_SESSION['success']);
       color: #666;
       margin-bottom: 30px;
       font-size: 0.9rem;
+    }
+
+    .badge-counselor {
+      background: linear-gradient(135deg, #6b7c00 0%, #8a9e00 100%);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 15px;
     }
 
     .form-control {
@@ -159,9 +169,12 @@ unset($_SESSION['success']);
 <div class="reset-container">
   <div class="logo-container">
     <img src="logo.jpg" alt="School Logo">
+    <div class="text-center">
+      <span class="badge-counselor">COUNSELOR PORTAL</span>
+    </div>
   </div>
 
-  <h2>🔑 Forgot Password</h2>
+  <h2>🔑 Reset Password</h2>
   <p class="subtitle">Enter your email to receive a password reset link</p>
 
   <?php if(!empty($error)): ?>
@@ -173,11 +186,10 @@ unset($_SESSION['success']);
   <?php endif; ?>
 
   <div class="info-box">
-    <strong>Note:</strong> Make sure to check your spam/junk folder if you don't see the email in your inbox.
+    <strong>Note:</strong> This is for authorized counselors only. Make sure to check your spam/junk folder if you don't see the email in your inbox.
   </div>
 
-  <form action="student_forgot_password.php" method="POST">
-
+  <form action="counselor_forgot_password.php" method="POST">
     <input 
       type="email" 
       name="email" 
@@ -190,7 +202,7 @@ unset($_SESSION['success']);
   </form>
 
   <div class="back-link">
-    <a href="student_log_reg.php">← Back to Login</a>
+    <a href="counselor_login.php">← Back to Login</a>
   </div>
 </div>
 

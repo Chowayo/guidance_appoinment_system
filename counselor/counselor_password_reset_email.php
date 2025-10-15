@@ -1,20 +1,11 @@
 <?php
-date_default_timezone_set('Asia/Manila');
-
-include '../session_config.php';
-include '../db/dbconn.php';
-include '../config.php';
-
-// Include PHPMailer
 require_once __DIR__ . '/../phpmailer/vendor/autoload.php';
+require_once __DIR__ . '/../config.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Email sending function
-function sendPasswordResetEmail($email, $studentName, $resetToken) {
-    global $base_url;
-
+function sendCounselorPasswordResetEmail($email, $counselorName, $resetToken) {
     $mail = new PHPMailer(true);
     
     try {
@@ -27,29 +18,29 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
         $mail->Port       = 587;
         
         $mail->setFrom('chowxinnlu@gmail.com', 'Evergreen Academy');
-        $mail->addAddress($email, $studentName);
+        $mail->addAddress($email, $counselorName);
         
         $mail->isHTML(true);
-        $mail->Subject = 'Password Reset Request - Evergreen Academy';
+        $mail->Subject = 'Password Reset Request - Evergreen Academy Counselor Portal';
 
-        $resetLink = rtrim($base_url, '/') . "/student/reset_password.php?token=" . urlencode($resetToken);
-
+        $resetLink = BASE_URL . "/counselor/reset_password.php?token=" . $resetToken;
+        
         $mail->Body = "
             <html>
             <head>
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff; }
-                    .header { background-color: #646300ff; color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                    .header { background: linear-gradient(135deg, #6b7c00 0%, #8a9e00 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }
                     .header h1 { margin: 0; font-size: 24px; }
                     .content { background-color: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
                     .greeting { font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #333; }
-                    .button { display: inline-block; padding: 14px 35px; background-color: #646300ff; 
+                    .button { display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #6b7c00 0%, #8a9e00 100%); 
                              color: white !important; text-decoration: none; border-radius: 8px; margin: 20px 0; 
                              font-weight: bold; transition: background-color 0.3s; }
-                    .button:hover { background-color: #dfcc29ff; }
+                    .button:hover { background: linear-gradient(135deg, #8a9e00 0%, #a8bd00 100%); }
                     .link-box { background-color: #f5f5f5; padding: 15px; border-radius: 8px; 
-                               word-break: break-all; margin: 15px 0; border-left: 4px solid #646300ff; 
+                               word-break: break-all; margin: 15px 0; border-left: 4px solid #6b7c00; 
                                font-size: 13px; color: #666; }
                     .warning-box { background-color: #fff3cd; padding: 20px; border-radius: 8px; 
                                   border-left: 4px solid #ffc107; margin: 20px 0; }
@@ -66,8 +57,8 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
                         <h1>🔒 Password Reset Request</h1>
                     </div>
                     <div class='content'>
-                        <p class='greeting'>Hello, {$studentName}!</p>
-                        <p>We received a request to reset your password for your Evergreen Academy account.</p>
+                        <p class='greeting'>Hello, {$counselorName}!</p>
+                        <p>We received a request to reset your password for your Evergreen Academy Counselor Portal account.</p>
                         <p>Click the button below to reset your password:</p>
                         
                         <p style='text-align: center;'>
@@ -95,7 +86,7 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
                     </div>
                     <div class='footer'>
                         <p><strong>Evergreen Academy</strong></p>
-                        <p>Guidance Management System</p>
+                        <p>Counselor Portal - Guidance Management System</p>
                         <p>&copy; 2025 All Rights Reserved</p>
                     </div>
                 </div>
@@ -103,7 +94,7 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
             </html>
         ";
         
-        $mail->AltBody = "Hello {$studentName},\n\n"
+        $mail->AltBody = "Hello {$counselorName},\n\n"
                        . "We received a request to reset your password.\n\n"
                        . "Reset your password using this link: {$resetLink}\n\n"
                        . "This link expires in 1 hour.\n\n"
@@ -116,60 +107,4 @@ function sendPasswordResetEmail($email, $studentName, $resetToken) {
         return ['success' => false, 'message' => "Email error: {$mail->ErrorInfo}"];
     }
 }
-
-// Process form submission
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
-    $email = trim($_POST['email']);
-    
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['error'] = 'Invalid email format';
-        header('Location: student_log_reg.php');
-        exit;
-    }
-    
-    // Check if email exists
-    $query = "SELECT student_id, first_name, last_name FROM student WHERE email = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows > 0) {
-        $student = $result->fetch_assoc();
-        $studentName = $student['first_name'] . ' ' . $student['last_name'];
-        
-        $resetToken = bin2hex(random_bytes(32));
-        $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
-        
-        $updateQuery = "UPDATE student SET reset_token = ?, reset_token_expiry = ? WHERE email = ?";
-        $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("sss", $resetToken, $expiry, $email);
-        
-        if ($updateStmt->execute()) {
-            $emailResult = sendPasswordResetEmail($email, $studentName, $resetToken);
-            
-            if ($emailResult['success']) {
-                $_SESSION['success'] = 'Password reset link has been sent to your email. Please check your inbox.';
-            } else {
-                $_SESSION['error'] = 'Failed to send email. Please try again later.';
-            }
-        } else {
-            $_SESSION['error'] = 'Failed to generate reset token. Please try again.';
-        }
-        
-        $updateStmt->close();
-    } else {
-        $_SESSION['success'] = 'If that email exists in our system, a password reset link has been sent.';
-    }
-    
-    $stmt->close();
-    $conn->close();
-    
-    header('Location: student_log_reg.php');
-    exit;
-}
-
-header('Location: student_log_reg.php');
-exit;
 ?>

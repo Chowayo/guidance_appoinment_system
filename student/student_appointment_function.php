@@ -26,7 +26,6 @@ try {
     $reason = trim($_POST['reason'] ?? '');
     $slot = $_POST['slot'] ?? '';
 
-    // Validation
     if ($counselor_id <= 0) {
         throw new Exception('Invalid counselor selection.');
     }
@@ -35,7 +34,6 @@ try {
         throw new Exception('Please select a purpose for your appointment.');
     }
 
-    // If "Others" is selected, use the custom purpose
     if ($purpose === 'Others') {
         if (empty($purpose_other)) {
             throw new Exception('Please specify the purpose when selecting "Others".');
@@ -90,7 +88,6 @@ try {
         throw new Exception('This slot is already taken. Please select another.');
     }
 
-    // Insert appointment with new fields
     $stmt = $conn->prepare("
         INSERT INTO appointments (student_id, counselor_id, purpose, urgency_level, confirmation_email, date, time, reason, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending')
@@ -101,7 +98,6 @@ try {
         $appointment_id = $conn->insert_id;
         $stmt->close();
 
-        // Get student and counselor information for email
         $infoQuery = "SELECT 
                         s.first_name as student_fname, 
                         s.last_name as student_lname,
@@ -116,7 +112,6 @@ try {
         $info = $infoResult->fetch_assoc();
         $infoStmt->close();
 
-        // Prepare appointment details for email
         $studentName = $info['student_fname'] . ' ' . $info['student_lname'];
         $counselorName = $info['counselor_fname'] . ' ' . $info['counselor_lname'];
         
@@ -128,7 +123,6 @@ try {
             'counselor_name' => $counselorName
         ];
 
-        // Send confirmation email
         $emailResult = sendAppointmentConfirmationEmail($confirmation_email, $studentName, $appointmentDetails);
 
         $conn->close();
